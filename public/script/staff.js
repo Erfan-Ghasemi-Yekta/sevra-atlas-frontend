@@ -46,7 +46,7 @@ mountStaffPortfolio(portfolioRoot, {
 const profileRoot = document.getElementById("staff-profile");
 mountStaffProfile(profileRoot, {
   name: "مهسا محبی",
-  role: "میکاپ آرتیست تخصصی عروس",
+  role: "سالن زیبایی مهسا بیوتی",
   rating: 4.8,
   avatarSrc: "/public/assent/img/img-for-test/img-4.jpg",
 });
