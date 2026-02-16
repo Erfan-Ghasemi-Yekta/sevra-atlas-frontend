@@ -1,4 +1,5 @@
 import { mountComments } from "/public/script/components/comments.js";
+import { mountSalonServices } from "/public/script/components/salonServices.js";
 
 function escapeHtml(str = "") {
   return String(str)
@@ -49,11 +50,10 @@ const DEFAULT_TABS = [
             <div class="text-sm text-neutral-700">هر روز ۱۰ تا ۲۰</div>
           </div>
         </div>
-      
 
         <!-- Comments mount point (زیر توضیحات) -->
-        <div data-comments-slot></div>
-</div>
+        <div class="pt-2" data-comments-root></div>
+      </div>
     `,
   },
   {
@@ -87,35 +87,13 @@ const DEFAULT_TABS = [
     label: "سرویس ها",
     content: `
       <div class="space-y-4">
-        <div class="flex flex-wrap gap-2">
-          ${[
-            "کوتاهی مو",
-            "رنگ و مش",
-            "مانیکور",
-            "پدیکور",
-            "پاکسازی پوست",
-            "میکاپ",
-          ]
-            .map(
-              (t) =>
-                `<span class="inline-flex items-center rounded-full border border-neutral-50 bg-neutral-0 px-3 py-1 text-sm text-neutral-900">${escapeHtml(
-                  t
-                )}</span>`
-            )
-            .join("")}
+        <div class="text-sm text-neutral-700 leading-7">
+          خدمات سالن را می‌توانید از اینجا مرور کنید. فعلاً داده‌ها نمونه است تا وقتی API آماده شد،
+          فقط داده‌ها را از بک‌اند بگیری و به این بخش پاس بدهی.
         </div>
 
-        <div class="rounded-2xl border border-neutral-50 bg-neutral-50 p-4">
-          <div class="flex items-center justify-between">
-            <div class="text-sm font-bold text-neutral-900">لیست کامل خدمات</div>
-            <div class="text-sm text-primary-600 inline-flex items-center gap-1">
-              مشاهده ${iconChevronDown("size-4")}
-            </div>
-          </div>
-          <div class="mt-2 text-sm text-neutral-700 leading-7">
-            این بخش می‌تونه بعداً به API وصل بشه و به شکل آکاردئون/لیست قیمت نمایش داده بشه.
-          </div>
-        </div>
+        <!-- Services mount point -->
+        <div data-services-root></div>
       </div>
     `,
   },
@@ -275,7 +253,21 @@ export function mountSalonDetails(rootEl, props = {}) {
   // fetch(...).then(data => mountSalonDetails(rootEl, mapApiToProps(data)))
   rootEl.innerHTML = detailsTemplate(props);
   initTabs(rootEl);
-  initComments(rootEl, props);
+
+  // Mount comments (only if provided)
+  if (props.comments) {
+    const commentsRoot = rootEl.querySelector("[data-comments-root]");
+    if (commentsRoot) {
+      mountComments(commentsRoot, props.comments);
+    }
+  }
+
+  // Mount services (UI first; data later)
+  const servicesRoot = rootEl.querySelector("[data-services-root]");
+  if (servicesRoot) {
+    mountSalonServices(servicesRoot, props.services || {});
+  }
+
 }
 
 function initTabs(rootEl) {
@@ -315,23 +307,5 @@ function initTabs(rootEl) {
       btns[next].focus();
       setActive(btns[next].dataset.tabId);
     });
-  });
-}
-
-
-function initComments(rootEl, props) {
-  const slot = rootEl.querySelector("[data-comments-slot]");
-  if (!slot) return;
-
-  const cfg = props?.comments || {};
-  const entityType = cfg.entityType || "salon";
-  const entityId = cfg.entityId || props?.salonId || "demo-salon";
-  const client = cfg.client; // optional
-
-  mountComments(slot, {
-    entityType,
-    entityId,
-    client,
-    currentUser: cfg.currentUser || { name: "شما" },
   });
 }
