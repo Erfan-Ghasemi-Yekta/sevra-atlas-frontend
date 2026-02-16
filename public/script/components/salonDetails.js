@@ -1,3 +1,5 @@
+import { mountComments } from "/public/script/components/comments.js";
+
 function escapeHtml(str = "") {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -47,7 +49,11 @@ const DEFAULT_TABS = [
             <div class="text-sm text-neutral-700">هر روز ۱۰ تا ۲۰</div>
           </div>
         </div>
-      </div>
+      
+
+        <!-- Comments mount point (زیر توضیحات) -->
+        <div data-comments-slot></div>
+</div>
     `,
   },
   {
@@ -269,6 +275,7 @@ export function mountSalonDetails(rootEl, props = {}) {
   // fetch(...).then(data => mountSalonDetails(rootEl, mapApiToProps(data)))
   rootEl.innerHTML = detailsTemplate(props);
   initTabs(rootEl);
+  initComments(rootEl, props);
 }
 
 function initTabs(rootEl) {
@@ -308,5 +315,23 @@ function initTabs(rootEl) {
       btns[next].focus();
       setActive(btns[next].dataset.tabId);
     });
+  });
+}
+
+
+function initComments(rootEl, props) {
+  const slot = rootEl.querySelector("[data-comments-slot]");
+  if (!slot) return;
+
+  const cfg = props?.comments || {};
+  const entityType = cfg.entityType || "salon";
+  const entityId = cfg.entityId || props?.salonId || "demo-salon";
+  const client = cfg.client; // optional
+
+  mountComments(slot, {
+    entityType,
+    entityId,
+    client,
+    currentUser: cfg.currentUser || { name: "شما" },
   });
 }

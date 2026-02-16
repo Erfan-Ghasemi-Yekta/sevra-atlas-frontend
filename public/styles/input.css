@@ -11,3 +11,10 @@
 
   --color-accent-500:  #FFCC00;
 }
+
+:root { color-scheme: light; }
+
+html, body {
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+}
