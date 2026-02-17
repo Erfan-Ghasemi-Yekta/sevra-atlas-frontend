@@ -51,6 +51,13 @@ const DEFAULT_TABS = [
           </div>
         </div>
 
+        <div class="rounded-2xl border border-neutral-50 bg-neutral-50 p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-bold text-neutral-900">شماره تماس</div>
+            <div class="text-sm text-neutral-700">09123456789</div>
+          </div>
+        </div>
+
         <!-- Comments mount point (زیر توضیحات) -->
         <div class="pt-2" data-comments-root></div>
       </div>
