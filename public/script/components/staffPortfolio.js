@@ -12,6 +12,14 @@ function escapeHtml(str = "") {
     .replaceAll("'", "&#039;");
 }
 
+function iconSparkle(className = "size-5") {
+  return `
+    <svg class="${className}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2l1.2 4.2L17.4 8l-4.2 1.2L12 13.4l-1.2-4.2L6.6 8l4.2-1.8L12 2zM19 12l.8 2.8L22.6 16l-2.8.8L19 19.6l-.8-2.8L15.4 16l2.8-1.2L19 12zM5 13l.7 2.3L8 16l-2.3.7L5 19l-.7-2.3L2 16l2.3-.7L5 13z"/>
+    </svg>
+  `;
+}
+
 function normalizeImages(input = []) {
   const arr = Array.isArray(input) ? input : [];
   return arr
@@ -58,11 +66,7 @@ function loadMock(staffId, seedImages = []) {
           "/public/assent/img/img-for-test/img-4.jpg",
         ]);
 
-  const db = {
-    items: fallback,
-    total: fallback.length,
-  };
-
+  const db = { items: fallback, total: fallback.length };
   saveMock(staffId, db);
   return db;
 }
@@ -78,7 +82,6 @@ export function createStaffPortfolioClient({ baseUrl = "", routes = {} } = {}) {
   const hasApi = Boolean(baseUrl);
 
   const defaultRoutes = {
-    // پیشنهادی (تو بعداً با بک‌اندت هماهنگ می‌کنی)
     list: ({ staffId }) => `${baseUrl}/staff/${encodeURIComponent(staffId)}/portfolio`,
   };
 
@@ -98,8 +101,6 @@ export function createStaffPortfolioClient({ baseUrl = "", routes = {} } = {}) {
   }
 
   return {
-    // انتظار خروجی API (پیشنهادی):
-    // { items: [{id, url, alt?}, ...], total: number }
     async list({ staffId, seedImages = [] } = {}) {
       if (!staffId) throw new Error("staffId is required");
 
@@ -124,21 +125,29 @@ export function createStaffPortfolioClient({ baseUrl = "", routes = {} } = {}) {
 
 function renderSkeleton(rootEl) {
   rootEl.innerHTML = `
-    <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
-      <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px;">
-        ${Array.from({ length: 4 })
-          .map(
-            () => `
-            <div class="bg-neutral-50" style="aspect-ratio: 1 / 1;"></div>
-          `
-          )
-          .join("")}
+    <div class="space-y-3">
+      <div class="flex items-center justify-start gap-2 text-lg font-extrabold text-neutral-900">
+        <span class="text-primary-900">${iconSparkle("size-5")}</span>
+        <span>نمونه کار ها</span>
+      </div>
+
+      <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
+        <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px;">
+          ${Array.from({ length: 4 })
+            .map(() => `<div class="bg-neutral-50" style="aspect-ratio: 1 / 1;"></div>`)
+            .join("")}
+        </div>
       </div>
     </div>
   `;
 }
 
-function previewTemplate({ images, previewCount = 4, title = "نمونه کار", totalCount } = {}) {
+function previewTemplate({
+  images,
+  previewCount = 4,
+  heading = "نمونه کار ها",
+  totalCount,
+} = {}) {
   const items = normalizeImages(images);
   const preview = items.slice(0, previewCount);
 
@@ -176,23 +185,28 @@ function previewTemplate({ images, previewCount = 4, title = "نمونه کار"
       : "";
 
   return `
-    <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
-      <button
-        type="button"
-        data-portfolio-open
-        class="block w-full text-right"
-        aria-label="مشاهده همه ${escapeHtml(title)}"
-      >
-        <div class="relative">
-          <div
-            class="grid"
-            style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px;"
-          >
-            ${cells}
+    <div class="space-y-3">
+      <!-- ✅ عنوان بالا سمت راست + ستاره زرشکی سمت راست عنوان -->
+      <div class="flex items-center justify-start gap-2 text-lg font-extrabold text-neutral-900">
+        <span class="text-primary-900">${iconSparkle("size-5")}</span>
+        <span>${escapeHtml(heading)}</span>
+      </div>
+
+      <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
+        <button
+          type="button"
+          data-portfolio-open
+          class="block w-full text-right"
+          aria-label="مشاهده همه نمونه کار ها"
+        >
+          <div class="relative">
+            <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px;">
+              ${cells}
+            </div>
+            ${overlay}
           </div>
-          ${overlay}
-        </div>
-      </button>
+        </button>
+      </div>
     </div>
   `;
 }
@@ -210,7 +224,7 @@ function modalTemplate({ title = "نمونه کارها", images = [] } = {}) {
 
   const list = items
     .map(
-      (img, i) => `
+      (img) => `
         <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
           <div class="relative bg-neutral-50" style="aspect-ratio: 1 / 1;">
             <img
@@ -228,10 +242,8 @@ function modalTemplate({ title = "نمونه کارها", images = [] } = {}) {
 
   return `
     <div data-portfolio-modal style="position: fixed; inset: 0; z-index: 9999;">
-      <!-- overlay -->
       <div data-portfolio-overlay style="position:absolute; inset:0; background: rgba(49,49,49,0.55);"></div>
 
-      <!-- panel -->
       <div style="position:relative; max-width: 560px; margin: 16px auto; height: calc(100% - 32px); padding: 0 16px;">
         <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="height:100%; display:flex; flex-direction:column; overflow:hidden;">
           <div class="p-4 border-b border-neutral-50 flex items-center justify-between gap-3">
@@ -301,38 +313,29 @@ function initPortfolio(rootEl, state) {
     const activeEl = document.activeElement;
 
     openModal({
-      title: state.title || "نمونه کارها",
+      title: state.modalTitle || "نمونه کارها",
       images: state.images,
       onClose: () => {
-        // برگردوندن فوکوس به جایی که کاربر بود
         if (activeEl && typeof activeEl.focus === "function") activeEl.focus();
       },
     });
   });
 }
 
-/**
- * mountStaffPortfolio
- * حالت‌ها:
- * 1) فقط با props.images => رندر مستقیم (بدون API)
- * 2) با props.client + props.staffId => لود از client (Mock/API) + رندر
- */
 export async function mountStaffPortfolio(rootEl, props = {}) {
   if (!rootEl) return;
 
   const {
-    title = "نمونه کار",
+    heading = "نمونه کار ها",
     previewCount = 4,
     images = null,
     totalCount = undefined,
 
-    // API-ready
     client = null,
     staffId = null,
     seedImages = [],
   } = props;
 
-  // اگر client داری، از اون لود کن (فعلاً mock، بعداً api)
   if (client && staffId) {
     renderSkeleton(rootEl);
 
@@ -342,32 +345,30 @@ export async function mountStaffPortfolio(rootEl, props = {}) {
       rootEl.innerHTML = previewTemplate({
         images: all,
         previewCount,
-        title,
+        heading,
         totalCount: data?.total,
       });
-      initPortfolio(rootEl, { title: `${title}‌ها`, images: all });
+      initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: all });
       return;
-    } catch (e) {
-      // fallback: اگر API خطا داد، با seed/images رندر کن
+    } catch {
       const fallback = normalizeImages(images || seedImages || []);
       rootEl.innerHTML = previewTemplate({
         images: fallback,
         previewCount,
-        title,
+        heading,
         totalCount: fallback.length,
       });
-      initPortfolio(rootEl, { title: `${title}‌ها`, images: fallback });
+      initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: fallback });
       return;
     }
   }
 
-  // حالت ساده: مستقیم با images
   const all = normalizeImages(images || []);
   rootEl.innerHTML = previewTemplate({
     images: all,
     previewCount,
-    title,
+    heading,
     totalCount,
   });
-  initPortfolio(rootEl, { title: `${title}‌ها`, images: all });
+  initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: all });
 }
