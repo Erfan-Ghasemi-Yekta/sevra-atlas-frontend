@@ -32,11 +32,9 @@ const salonId = qs.get("salonId") || "salon-1";
 const salonUiModel = {
   salonId,
   name: "سالن زیبایی حدیث",
-  location: "تهران، سعادت‌آباد",
   rating: 3.9,
   ratingCount: 17,     // تعداد امتیازها
   commentsCount: 40,   // تعداد نظرات
-  badges: ["پرطرفدار"],
   // avatarSrc: "/public/assent/img/salon-avatar.jpg", // اگر داری، فعال کن
 };
 
