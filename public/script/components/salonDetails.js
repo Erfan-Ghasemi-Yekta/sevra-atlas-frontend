@@ -1,4 +1,3 @@
-import { mountComments } from "/public/script/components/comments.js";
 import { mountSalonServices } from "/public/script/components/salonServices.js";
 
 function escapeHtml(str = "") {
@@ -8,6 +7,16 @@ function escapeHtml(str = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatNumberFa(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "";
+  try {
+    return new Intl.NumberFormat("fa-IR").format(num);
+  } catch {
+    return String(num);
+  }
 }
 
 function iconStar(className = "size-4") {
@@ -26,10 +35,22 @@ function iconPin(className = "size-4") {
   `;
 }
 
-function iconChevronDown(className = "size-4") {
+function iconArrowLeft(className = "size-4") {
   return `
-    <svg class="${className}" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clip-rule="evenodd"/>
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+
+function iconScissors(className = "size-5") {
+  // آیکن ساده قیچی (نماد سالن) - بدون وابستگی به فونت
+  return `
+    <svg class="${className}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 7a3 3 0 1 0 0.001 6.001A3 3 0 0 0 7 7Z" stroke="currentColor" stroke-width="2"/>
+      <path d="M7 11l14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M7 13a3 3 0 1 0 0.001 6.001A3 3 0 0 0 7 13Z" stroke="currentColor" stroke-width="2"/>
+      <path d="M7 13l14-10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     </svg>
   `;
 }
@@ -44,6 +65,7 @@ const DEFAULT_TABS = [
           اینجا متن توضیحات سالن قرار می‌گیرد. فعلاً نمونه گذاشته شده تا وقتی بک‌اند آماده شد،
           فقط داده‌ها را از API بگیری و همینجا تزریق کنی.
         </p>
+
         <div class="rounded-2xl border border-neutral-50 bg-neutral-50 p-4">
           <div class="flex items-center justify-between">
             <div class="text-sm font-bold text-neutral-900">ساعت کاری</div>
@@ -57,9 +79,6 @@ const DEFAULT_TABS = [
             <div class="text-sm text-neutral-700">09123456789</div>
           </div>
         </div>
-
-        <!-- Comments mount point (زیر توضیحات) -->
-        <div class="pt-2" data-comments-root></div>
       </div>
     `,
   },
@@ -142,17 +161,30 @@ const DEFAULT_TABS = [
 
 function detailsTemplate(props) {
   const {
+    salonId,
     name,
+    avatarSrc,
     location,
     rating,
+    ratingCount,
+    commentsCount,
     badges = [],
+    commentsPageUrl,
+    commentsButtonLabel = "اطلاعات و نظرات",
     tabs = DEFAULT_TABS,
     activeTabId = tabs?.[0]?.id || "about",
   } = props;
 
   const safeName = escapeHtml(name || "سالن زیبایی (نمونه)");
-  const safeLocation = escapeHtml(location || "تهران، سعادت‌آباد");
-  const safeRating = Number.isFinite(Number(rating)) ? Number(rating).toFixed(1) : "4.8";
+  const safeLocation = escapeHtml(location || "");
+  const safeRating = Number.isFinite(Number(rating)) ? Number(rating).toFixed(1) : "0.0";
+
+  const ratingCountText = formatNumberFa(ratingCount);
+  const commentsCountText = formatNumberFa(commentsCount);
+
+  const href =
+    commentsPageUrl ||
+    `./comments.html?entityType=salon&entityId=${encodeURIComponent(salonId || "salon-1")}&name=${encodeURIComponent(name || "")}&back=${encodeURIComponent(window.location.pathname + window.location.search)}`;
 
   const extraBadges = (badges || [])
     .filter(Boolean)
@@ -204,34 +236,63 @@ function detailsTemplate(props) {
     })
     .join("");
 
+  const avatarNode = avatarSrc
+    ? `<img src="${escapeHtml(avatarSrc)}" alt="${safeName}" class="h-full w-full object-cover" draggable="false" />`
+    : `<div class="text-primary-600">${iconScissors("size-5")}</div>`;
+
   return `
     <section dir="rtl" class="bg-neutral-0">
       <div class="px-4 pt-4 pb-6">
-        <!-- Title + meta -->
-        <div class="space-y-3">
-          <div class="flex items-start justify-between gap-3">
-            <h1 class="text-lg font-bold tracking-tight text-neutral-900">
-              ${safeName}
-            </h1>
+        <!-- Redesigned top (مثل تصویر) -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="salon-avatar size-11 rounded-full border border-neutral-50 bg-neutral-0 grid place-items-center">
+              ${avatarNode}
+            </div>
 
-            <!-- Rating pill -->
-            <span class="inline-flex items-center gap-1 rounded-full bg-primary-900 text-neutral-0 px-3 py-1 text-sm font-bold">
-              ${iconStar("size-4 text-accent-500")}
-              <span>${safeRating}</span>
-            </span>
+            <div class="min-w-0">
+              <h1 class="text-lg font-bold tracking-tight text-neutral-900 truncate">
+                ${safeName}
+              </h1>
+
+              <div class="mt-1 flex items-center gap-3 text-sm text-neutral-900">
+                <div class="inline-flex items-center gap-1">
+                  <span>${escapeHtml(safeRating)}</span>
+                  <span>${iconStar("size-4")}</span>
+                  ${ratingCountText ? `<span class="text-neutral-700">(${escapeHtml(ratingCountText)})</span>` : ""}
+                </div>
+
+                ${commentsCountText ? `<div class="text-neutral-900">${escapeHtml(commentsCountText)} نظر</div>` : ""}
+              </div>
+            </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Location -->
+          <!-- Left button: go to comments page -->
+          <a
+            href="${href}"
+            class="shrink-0 inline-flex items-center gap-2 rounded-full border border-neutral-50 bg-neutral-0 px-3 py-2 text-sm text-neutral-900 shadow-sm active:scale-[0.99] transition"
+            aria-label="رفتن به صفحه نظرات"
+          >
+            <span class="size-5 rounded-full bg-neutral-50 grid place-items-center text-neutral-900">
+              ${iconArrowLeft("size-4")}
+            </span>
+            <span>${escapeHtml(commentsButtonLabel)}</span>
+          </a>
+        </div>
+
+        ${safeLocation ? `
+          <div class="mt-3 flex flex-wrap items-center gap-2">
             <div class="inline-flex items-center gap-1 rounded-full border border-neutral-50 bg-neutral-0 px-3 py-1 text-sm text-neutral-700">
               <span class="text-primary-600">${iconPin("size-4")}</span>
               <span class="truncate">${safeLocation}</span>
             </div>
-
-            <!-- Extra badges (مثل: پرطرفدار) -->
             ${extraBadges}
           </div>
-        </div>
+        ` : `
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            ${extraBadges}
+          </div>
+        `}
 
         <!-- Tabs -->
         <div class="mt-4">
@@ -261,20 +322,11 @@ export function mountSalonDetails(rootEl, props = {}) {
   rootEl.innerHTML = detailsTemplate(props);
   initTabs(rootEl);
 
-  // Mount comments (only if provided)
-  if (props.comments) {
-    const commentsRoot = rootEl.querySelector("[data-comments-root]");
-    if (commentsRoot) {
-      mountComments(commentsRoot, props.comments);
-    }
-  }
-
   // Mount services (UI first; data later)
   const servicesRoot = rootEl.querySelector("[data-services-root]");
   if (servicesRoot) {
     mountSalonServices(servicesRoot, props.services || {});
   }
-
 }
 
 function initTabs(rootEl) {

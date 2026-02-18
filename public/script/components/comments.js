@@ -385,18 +385,7 @@ function containerTemplate() {
     <section class="mt-6" dir="rtl">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-sm font-bold text-neutral-900">نظرات کاربران</h2>
-
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-neutral-700" for="commentsSort">مرتب‌سازی</label>
-          <select
-            id="commentsSort"
-            class="h-10 rounded-2xl border border-neutral-50 bg-neutral-0 px-3 text-sm text-neutral-900 outline-none focus:ring-2 focus:ring-primary-900/20"
-            data-sort
-          >
-            <option value="new">جدیدترین</option>
-            <option value="top">محبوب‌ترین</option>
-          </select>
-        </div>
+        <div class="text-xs text-neutral-700" data-total></div>
       </div>
 
       <div class="mt-3" data-state></div>
@@ -433,7 +422,6 @@ function containerTemplate() {
             >
               ارسال نظر
             </button>
-            <span class="text-xs text-neutral-700" data-hint></span>
           </div>
 
           <p class="mt-2 text-xs text-primary-600 hidden" data-new-comment-error></p>
@@ -449,15 +437,11 @@ export function mountComments(rootEl, { entityType, entityId, client, currentUse
   rootEl.innerHTML = containerTemplate();
 
   const stateEl = rootEl.querySelector("[data-state]");
-  const sortEl = rootEl.querySelector("[data-sort]");
   const formEl = rootEl.querySelector("[data-new-comment-form]");
   const inputEl = rootEl.querySelector("[data-new-comment-input]");
   const errorEl = rootEl.querySelector("[data-new-comment-error]");
-  const hintEl = rootEl.querySelector("[data-hint]");
+  const totalEl = rootEl.querySelector("[data-total]");
   const viewMoreBtn = rootEl.querySelector("[data-view-more]");
-
-  let sort = "new";
-
   const renderErrorState = (message) => {
     stateEl.innerHTML = `
       <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4">
@@ -580,10 +564,10 @@ export function mountComments(rootEl, { entityType, entityId, client, currentUse
     const prevY = keepScroll ? window.scrollY : 0;
 
     renderSkeleton(stateEl);
-    hintEl.textContent = "";
+    totalEl.textContent = "";
 
     try {
-      const { items, total } = await client.list({ entityType, entityId, sort, limit: 10, offset: 0 });
+      const { items, total } = await client.list({ entityType, entityId, sort: "new", limit: 10, offset: 0 });
 
       if (!items?.length) {
         renderEmptyState();
@@ -596,20 +580,13 @@ export function mountComments(rootEl, { entityType, entityId, client, currentUse
         wireInteractions();
       }
 
-      hintEl.textContent = total ? `${total} نظر` : "";
+      totalEl.textContent = total ? `${total} نظر` : "";
 
       if (keepScroll) window.scrollTo({ top: prevY });
     } catch (e) {
       renderErrorState(e?.message);
     }
   }
-
-  // sort change
-  sortEl?.addEventListener("change", () => {
-    sort = sortEl.value;
-    load();
-  });
-
   // view more (stub only)
   viewMoreBtn?.addEventListener("click", () => {
     // منطقش بعداً وقتی API و pagination آماده شد.

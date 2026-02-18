@@ -8,6 +8,8 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
     --color-neutral-50: #F0F1F7;
+    --color-neutral-400: oklch(70.8% 0 0);
+    --color-neutral-500: oklch(55.6% 0 0);
     --color-neutral-700: #484848;
     --color-neutral-900: #313131;
     --spacing: 0.25rem;
@@ -499,6 +501,9 @@
   .py-2 {
     padding-block: calc(var(--spacing) * 2);
   }
+  .py-10 {
+    padding-block: calc(var(--spacing) * 10);
+  }
   .pt-1 {
     padding-top: calc(var(--spacing) * 1);
   }
@@ -514,8 +519,14 @@
   .pb-6 {
     padding-bottom: calc(var(--spacing) * 6);
   }
+  .text-center {
+    text-align: center;
+  }
   .text-right {
     text-align: right;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
   }
   .text-lg {
     font-size: var(--text-lg);
@@ -528,6 +539,10 @@
   .text-xs {
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
+  }
+  .leading-6 {
+    --tw-leading: calc(var(--spacing) * 6);
+    line-height: calc(var(--spacing) * 6);
   }
   .leading-7 {
     --tw-leading: calc(var(--spacing) * 7);
@@ -553,6 +568,12 @@
   }
   .text-neutral-0 {
     color: var(--color-neutral-0);
+  }
+  .text-neutral-400 {
+    color: var(--color-neutral-400);
+  }
+  .text-neutral-500 {
+    color: var(--color-neutral-500);
   }
   .text-neutral-700 {
     color: var(--color-neutral-700);
@@ -637,6 +658,9 @@
 html, body {
   background-color: var(--color-neutral-0);
   color: var(--color-neutral-900);
+}
+.salon-avatar {
+  overflow: hidden;
 }
 @property --tw-translate-x {
   syntax: "*";

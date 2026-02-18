@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#FBFBFB">
+  <link rel="stylesheet" href="/public/styles/app.css" />
+  <title>SEVRA | نظرات</title>
+</head>
+
+<body class="bg-neutral-0 text-neutral-900">
+  <!-- Header Mount Point -->
+  <div id="app-header"></div>
+
+  <main class="px-4 pt-4">
+    <div id="comments-page">
+      <div class="py-10 text-center text-sm text-neutral-400">در حال بارگذاری...</div>
+    </div>
+  </main>
+
+  <script type="module">
+    // به‌جای src مستقیم، با import داینامیک لود می‌کنیم تا اگر مسیر/ایمپورت‌ها مشکل داشتند،
+    // صفحه سفید نماند و خطا را ببینید.
+    import("/public/script/commentsPage.js").catch((err) => {
+      console.error(err);
+      const root = document.getElementById("comments-page");
+      if (root) {
+        root.innerHTML = `
+          <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4 shadow-sm">
+            <div class="text-sm font-bold text-neutral-900">نظرات بارگذاری نشد</div>
+            <div class="mt-2 text-xs leading-6 text-neutral-500">
+              کنسول مرورگر را باز کنید تا خطا را ببینید. معمولاً مشکل از مسیر فایل‌هاست:
+              <span class="font-mono">/public/script/commentsPage.js</span> و ایمپورت‌های داخلش.
+            </div>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+
+</html>

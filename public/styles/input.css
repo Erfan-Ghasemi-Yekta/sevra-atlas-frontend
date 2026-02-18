@@ -18,3 +18,7 @@ html, body {
   background-color: var(--color-neutral-0);
   color: var(--color-neutral-900);
 }
+
+
+/* Custom helpers for redesigned salon header */
+.salon-avatar{overflow:hidden;}
