@@ -39,9 +39,9 @@ const salonUiModel = {
 };
 
 // لینک صفحه‌ی نظرات (فعلاً با querystring؛ بعداً می‌تونی با router خودت عوضش کنی)
-const commentsPageUrl = `/comments.html?entityType=salon&entityId=${encodeURIComponent(
+const commentsPageUrl = `/public/comments.html?entityType=salon&entityId=${encodeURIComponent(
   salonId
-)}&back=${encodeURIComponent(`/index.html?salonId=${salonId}`)}&name=${encodeURIComponent(
+)}&back=${encodeURIComponent(`/public/salon.html?salonId=${salonId}`)}&name=${encodeURIComponent(
   salonUiModel.name
 )}`;
 
