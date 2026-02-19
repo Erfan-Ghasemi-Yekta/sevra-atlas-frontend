@@ -82,18 +82,20 @@ const DEFAULT_TABS = [
             <div class="min-w-0">
               <div class="text-sm font-bold text-neutral-900">آدرس سالن</div>
               <div class="mt-1 text-sm text-neutral-700 leading-7">
-                تهران، سعادت‌آباد، خیابان ...، پلاک ...
+               تبریز-جنب لاله پارک-فرشته جنوبی-فرشته 22-پلاک 10-طبقه اول
               </div>
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          class="w-full h-11 rounded-2xl bg-primary-900 text-neutral-0 text-sm font-bold active:scale-[0.99] transition"
+            <iframe title="map-iframe" src="https://neshan.org/maps/iframe/places/_bAyuueCiPBA#c38.068-46.377-18z-0p/38.067676968921674/46.37673867578209" width="400" height="300" allowFullScreen loading="lazy" ></iframe>
+        <a
+          href="https://nshn.ir/_bAyuueCiPBA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full h-11 rounded-2xl bg-primary-900 text-neutral-0 text-sm font-bold active:scale-[0.99] transition flex items-center justify-center no-underline"
         >
-          مسیریابی (بعداً وصل می‌کنی)
-        </button>
+               مسیریابی با نشان
+        </a>
       </div>
     `,
   },
