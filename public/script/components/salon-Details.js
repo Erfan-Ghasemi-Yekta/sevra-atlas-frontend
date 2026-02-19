@@ -1,4 +1,4 @@
-import { mountSalonServices } from "/public/script/components/salonServices.js";
+import { mountSalonServices } from "/public/script/components/salon-Services.js";
 
 function escapeHtml(str = "") {
   return String(str)

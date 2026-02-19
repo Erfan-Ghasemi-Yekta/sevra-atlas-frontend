@@ -2,9 +2,9 @@ import { mountHeader } from "/public/script/components/header.js";
 import {
   mountStaffPortfolio,
   createStaffPortfolioClient,
-} from "/public/script/components/staffPortfolio.js";
-import { mountStaffProfile } from "/public/script/components/staffProfile.js";
-import { mountStaffDetails } from "/public/script/components/staffDetails.js";
+} from "/public/script/components/staff-Portfolio.js";
+import { mountStaffProfile } from "/public/script/components/staff-Profile.js";
+import { mountStaffDetails } from "/public/script/components/staff-Details.js";
 
 // Header
 const headerRoot = document.getElementById("app-header");

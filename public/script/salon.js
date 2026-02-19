@@ -1,6 +1,6 @@
 import { mountHeader } from "/public/script/components/header.js";
-import { mountSalonGallery } from "/public/script/components/salonGallery.js";
-import { mountSalonDetails } from "/public/script/components/salonDetails.js";
+import { mountSalonGallery } from "/public/script/components/salon-Gallery.js";
+import { mountSalonDetails } from "/public/script/components/salon-details.js";
 
 // ---------------- Header ----------------
 const headerRoot = document.getElementById("app-header");
