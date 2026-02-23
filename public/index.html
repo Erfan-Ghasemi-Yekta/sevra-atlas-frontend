@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEVRA — Landing</title>
+
+    <!-- اگر Tailwind رو build می‌کنی، همین فایل‌های خودت بهتره -->
+    <link rel="stylesheet" href="/public/styles/app.css" />
+
+  </head>
+
+  <body class="bg-neutral-0 text-neutral-900">
+    <!-- Header mount point -->
+    <div id="appHeader"></div>
+
+    <main class="px-4 pt-8 pb-16">
+<section class="mx-auto max-w-md">
+  <!-- Hero images (قبل از سرچ) -->
+  <div class="w-full flex flex-col items-center gap-4 mb-6">
+    <img
+      src="/public/assets/img/transparent.png"
+      alt=""
+      class="w-full max-w-sm select-none pointer-events-none"
+      draggable="false"
+    />
+    <img
+      src="/public/assets/img/عـــید_نزدیکـــــه_ها_!_هــمــین_الان_وقـــت_بگــــــــــــــــ.png"
+      alt="عید نزدیکه‌ها! همین الان وقت بگیر!"
+      class="w-full max-w-sm select-none pointer-events-none"
+      draggable="false"
+    />
+  </div>
+
+  <!-- Search -->
+  <div id="searchMount"></div>
+
+  <!-- Placeholder for boxes/cards -->
+  <div class="mt-8"></div>
+</section>
+    </main>
+
+    <script type="module" src="/public/script/landing.js"></script>
+  </body>
+</html>
