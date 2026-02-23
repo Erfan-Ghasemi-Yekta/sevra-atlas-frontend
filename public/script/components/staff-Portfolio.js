@@ -1,7 +1,9 @@
+import { apiRequest } from "/public/script/api/apiClient.js";
+
 // Staff Portfolio component
-// - Shows first 4 images as preview
+// - Fetches gallery from API (no static seed images by default)
+// - Shows first N images as preview
 // - On click, opens a modal with ALL images as a scrollable list
-// - API-ready client (Mock when baseUrl is empty)
 
 function escapeHtml(str = "") {
   return String(str)
@@ -25,112 +27,77 @@ function normalizeImages(input = []) {
   return arr
     .map((it, i) => {
       if (!it) return null;
+
+      // string url
       if (typeof it === "string") {
         return { id: `img_${i}`, url: it, alt: `نمونه کار ${i + 1}` };
       }
+
+      // media object
       if (typeof it === "object") {
-        const url = it.url || it.src || "";
+        const url = it.url || it.src || it.path || it.originalUrl || "";
         if (!url) return null;
+
         return {
-          id: String(it.id ?? `img_${i}`),
+          id: String(it.id ?? it.mediaId ?? `img_${i}`),
           url,
-          alt: it.alt || `نمونه کار ${i + 1}`,
+          alt: it.altText || it.alt || it.title || `نمونه کار ${i + 1}`,
         };
       }
+
       return null;
     })
     .filter(Boolean);
 }
 
-// ---------------- API / Mock client ----------------
+// ---------------- API client ----------------
 
-function getStorageKey(staffId) {
-  return `sevra:portfolio:staff:${staffId}`;
-}
-
-function loadMock(staffId, seedImages = []) {
-  const key = getStorageKey(staffId);
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-
-  const seed = normalizeImages(seedImages);
-  const fallback =
-    seed.length > 0
-      ? seed
-      : normalizeImages([
-          "/public/assent/img/img-for-test/img-1.jpg",
-          "/public/assent/img/img-for-test/img-2.jpg",
-          "/public/assent/img/img-for-test/img-3.jpg",
-          "/public/assent/img/img-for-test/img-4.jpg",
-        ]);
-
-  const db = { items: fallback, total: fallback.length };
-  saveMock(staffId, db);
-  return db;
-}
-
-function saveMock(staffId, data) {
-  const key = getStorageKey(staffId);
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch {}
-}
-
-export function createStaffPortfolioClient({ baseUrl = "", routes = {} } = {}) {
-  const hasApi = Boolean(baseUrl);
-
+export function createStaffPortfolioClient({ routes = {} } = {}) {
   const defaultRoutes = {
-    list: ({ staffId }) => `${baseUrl}/staff/${encodeURIComponent(staffId)}/portfolio`,
+    // NOTE: This endpoint is NOT in the current atlas-API.yaml as a GET.
+    // Backend should implement GET /artists/{idOrSlug}/gallery for frontend read.
+    list: ({ idOrSlug }) => `/artists/${encodeURIComponent(String(idOrSlug))}/gallery`,
   };
 
   const r = { ...defaultRoutes, ...routes };
 
-  async function apiFetch(url, options) {
-    const res = await fetch(url, {
-      headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
-      ...options,
-    });
-    if (!res.ok) {
-      const msg = await res.text().catch(() => "");
-      throw new Error(msg || `HTTP ${res.status}`);
-    }
-    if (res.status === 204) return null;
-    return res.json();
-  }
-
   return {
-    async list({ staffId, seedImages = [] } = {}) {
-      if (!staffId) throw new Error("staffId is required");
+    async list({ idOrSlug, page, limit, signal } = {}) {
+      if (!idOrSlug) throw new Error("idOrSlug is required");
 
-      if (hasApi) {
-        const data = await apiFetch(r.list({ staffId }));
-        return {
-          items: normalizeImages(data?.items || data || []),
-          total: Number.isFinite(Number(data?.total)) ? Number(data.total) : (data?.items || data || []).length,
-        };
-      }
+      const res = await apiRequest(r.list({ idOrSlug }), {
+        query: { page, limit },
+        signal,
+      });
 
-      const db = loadMock(staffId, seedImages);
-      return {
-        items: normalizeImages(db.items || []),
-        total: Number.isFinite(Number(db.total)) ? Number(db.total) : (db.items || []).length,
-      };
+      // normalize common shapes
+      const data = res?.data ?? res;
+      const itemsRaw = Array.isArray(data) ? data : data?.items || data?.results || [];
+      const totalRaw = Array.isArray(data) ? data.length : data?.total ?? data?.count ?? itemsRaw.length;
+
+      const items = normalizeImages(itemsRaw);
+      const total = Number.isFinite(Number(totalRaw)) ? Number(totalRaw) : items.length;
+
+      return { items, total };
     },
   };
 }
 
 // ---------------- UI ----------------
 
-function renderSkeleton(rootEl) {
+function headingTemplate(text) {
+  return `
+    <div class="flex items-center justify-start gap-2 text-lg font-extrabold text-neutral-900">
+      <span class="text-primary-900">${iconSparkle("size-5")}</span>
+      <span>${escapeHtml(text)}</span>
+    </div>
+  `;
+}
+
+function renderSkeleton(rootEl, heading = "نمونه کار ها") {
   rootEl.innerHTML = `
     <div class="space-y-3">
-      <div class="flex items-center justify-start gap-2 text-lg font-extrabold text-neutral-900">
-        <span class="text-primary-900">${iconSparkle("size-5")}</span>
-        <span>نمونه کار ها</span>
-      </div>
-
+      ${headingTemplate(heading)}
       <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
         <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px;">
           ${Array.from({ length: 4 })
@@ -142,12 +109,39 @@ function renderSkeleton(rootEl) {
   `;
 }
 
-function previewTemplate({
-  images,
-  previewCount = 4,
+function emptyTemplate({ heading = "نمونه کار ها", message = "نمونه کاری برای این متخصص ثبت نشده است." } = {}) {
+  return `
+    <div class="space-y-3">
+      ${headingTemplate(heading)}
+      <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4 text-sm text-neutral-700">
+        ${escapeHtml(message)}
+      </div>
+    </div>
+  `;
+}
+
+function errorTemplate({
   heading = "نمونه کار ها",
-  totalCount,
+  message = "خطا در دریافت نمونه کارها. لطفاً دوباره تلاش کنید.",
 } = {}) {
+  return `
+    <div class="space-y-3">
+      ${headingTemplate(heading)}
+      <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4">
+        <div class="text-sm text-neutral-700">${escapeHtml(message)}</div>
+        <button
+          type="button"
+          data-portfolio-retry
+          class="mt-3 inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-bold text-neutral-0"
+        >
+          تلاش مجدد
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function previewTemplate({ images, previewCount = 4, heading = "نمونه کار ها", totalCount } = {}) {
   const items = normalizeImages(images);
   const preview = items.slice(0, previewCount);
 
@@ -167,6 +161,7 @@ function previewTemplate({
             alt="${escapeHtml(img.alt)}"
             class="absolute inset-0 h-full w-full object-cover"
             draggable="false"
+            loading="lazy"
           />
         </div>
       `
@@ -186,11 +181,7 @@ function previewTemplate({
 
   return `
     <div class="space-y-3">
-      <!-- ✅ عنوان بالا سمت راست + ستاره زرشکی سمت راست عنوان -->
-      <div class="flex items-center justify-start gap-2 text-lg font-extrabold text-neutral-900">
-        <span class="text-primary-900">${iconSparkle("size-5")}</span>
-        <span>${escapeHtml(heading)}</span>
-      </div>
+      ${headingTemplate(heading)}
 
       <div class="rounded-2xl border border-neutral-50 bg-neutral-0" style="overflow:hidden;">
         <button
@@ -282,15 +273,15 @@ function openModal({ title, images, onClose } = {}) {
   const prevOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
 
+  const onKeyDown = (e) => {
+    if (e.key === "Escape") cleanup();
+  };
+
   const cleanup = () => {
     document.body.style.overflow = prevOverflow;
     document.removeEventListener("keydown", onKeyDown);
     modalEl.remove();
     onClose?.();
-  };
-
-  const onKeyDown = (e) => {
-    if (e.key === "Escape") cleanup();
   };
 
   overlay?.addEventListener("click", cleanup);
@@ -322,53 +313,88 @@ function initPortfolio(rootEl, state) {
   });
 }
 
+function initRetry(rootEl, onRetry) {
+  const btn = rootEl.querySelector("[data-portfolio-retry]");
+  if (!btn) return;
+  btn.addEventListener("click", onRetry);
+}
+
 export async function mountStaffPortfolio(rootEl, props = {}) {
   if (!rootEl) return;
 
   const {
     heading = "نمونه کار ها",
     previewCount = 4,
-    images = null,
-    totalCount = undefined,
+
+    // Backward compat: older code uses staffId
+    staffId = null,
+    artistIdOrSlug = null,
 
     client = null,
-    staffId = null,
-    seedImages = [],
   } = props;
 
-  if (client && staffId) {
-    renderSkeleton(rootEl);
+  const idOrSlug = artistIdOrSlug || staffId;
+
+  if (!client || !idOrSlug) {
+    rootEl.innerHTML = emptyTemplate({
+      heading,
+      message: "شناسه متخصص مشخص نیست یا کلاینت API تنظیم نشده است.",
+    });
+    return;
+  }
+
+  const controller = new AbortController();
+  renderSkeleton(rootEl, heading);
+
+  const load = async () => {
+    renderSkeleton(rootEl, heading);
 
     try {
-      const data = await client.list({ staffId, seedImages });
+      const data = await client.list({ idOrSlug, signal: controller.signal });
       const all = normalizeImages(data?.items || []);
+      const total = data?.total;
+
+      if (!all.length) {
+        rootEl.innerHTML = emptyTemplate({ heading });
+        return;
+      }
+
       rootEl.innerHTML = previewTemplate({
         images: all,
         previewCount,
         heading,
-        totalCount: data?.total,
+        totalCount: total,
       });
-      initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: all });
-      return;
-    } catch {
-      const fallback = normalizeImages(images || seedImages || []);
-      rootEl.innerHTML = previewTemplate({
-        images: fallback,
-        previewCount,
-        heading,
-        totalCount: fallback.length,
-      });
-      initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: fallback });
-      return;
-    }
-  }
 
-  const all = normalizeImages(images || []);
-  rootEl.innerHTML = previewTemplate({
-    images: all,
-    previewCount,
-    heading,
-    totalCount,
-  });
-  initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: all });
+      initPortfolio(rootEl, { modalTitle: "نمونه کارها", images: all });
+    } catch (err) {
+      // If backend hasn't implemented the GET endpoint yet, degrade gracefully.
+      // Common case right now: GET /artists/{idOrSlug}/gallery -> 405 (only POST exists in atlas-API.yaml).
+      console.warn("Portfolio fetch failed:", err);
+
+      const status = err?.status;
+
+      if (status === 405) {
+        rootEl.innerHTML = emptyTemplate({
+          heading,
+          message: "نمایش نمونه‌کارها هنوز از سمت API ارائه نشده است.",
+        });
+        return;
+      }
+
+      // Treat 404 as empty (some backends return 404 instead of an empty list)
+      if (status === 404) {
+        rootEl.innerHTML = emptyTemplate({ heading });
+        return;
+      }
+
+      rootEl.innerHTML = errorTemplate({ heading });
+      initRetry(rootEl, load);
+    }
+  };
+
+  await load();
+
+  // optional cleanup hook if caller ever wants it
+  return () => controller.abort();
 }

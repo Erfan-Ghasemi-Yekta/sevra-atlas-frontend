@@ -15,7 +15,7 @@ function formatNumberFa(n) {
 
 function formatTomanShort(price) {
   const p = Number(price);
-  if (!Number.isFinite(p)) return escapeHtml(String(price ?? "—"));
+  if (!Number.isFinite(p) || p <= 0) return "—";
 
   if (p >= 1_000_000) {
     const v = p / 1_000_000;
@@ -51,29 +51,49 @@ function iconMoney(className = "size-4") {
 }
 
 function normalize(props = {}) {
-  const specialties = Array.isArray(props.specialties) ? props.specialties : null;
+  const specialtiesInput = Array.isArray(props.specialties) ? props.specialties : [];
 
-  const fallback = [
-    { id: "classic-bridal", title: "آرایش عروس کلاسیک", priceToman: 280000, durationMin: 90 },
-    { id: "contouring", title: "گریم تخصصی و کانتورینگ", priceToman: 280000, durationMin: 90 },
-  ];
+  const description = String(props.description ?? "").trim();
+
+  const specialties = specialtiesInput
+    .map((it, idx) => {
+      if (!it) return null;
+
+      const title = it.title ?? it.nameFa ?? it.name ?? it.label ?? "";
+      const priceToman = it.priceToman ?? it.price ?? it.priceIRR ?? it.priceIrr ?? 0;
+      const durationMin = it.durationMin ?? it.duration ?? it.durationMinutes ?? 0;
+
+      return {
+        id: String(it.id ?? it.slug ?? `sp-${idx + 1}`),
+        title: String(title || "بدون عنوان"),
+        priceToman: Number(priceToman) || 0,
+        durationMin: Number(durationMin) || 0,
+      };
+    })
+    .filter(Boolean);
 
   return {
-    description:
-      props.description ??
-      "با بیش از 5 سال تجربه در زمینه آرایش تخصصی عروس، تمرکز من روی\nطبیعی‌سازی چهره و ماندگاری بالا در طول مراسم است.\nهر خدمات متناسب با فرم صورت و سلیقه شما شخصی‌سازی می‌شود.",
-    title: props.title || "تخصص ها",
-    specialties: (specialties && specialties.length ? specialties : fallback).map((it, idx) => ({
-      id: it.id || `sp-${idx + 1}`,
-      title: it.title || "بدون عنوان",
-      priceToman: it.priceToman ?? it.price ?? 0,
-      durationMin: it.durationMin ?? it.duration ?? 0,
-    })),
+    title: props.title || "تخصص‌ها",
+    description,
+    specialties,
   };
 }
 
 function descriptionTemplate(text) {
-  const lines = String(text || "").split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = String(text || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    return `
+      <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4">
+        <div class="text-sm text-neutral-700 leading-7" style="border-right: 3px solid var(--color-primary-600); padding-right: 12px;">
+          <p>توضیحی برای این متخصص ثبت نشده است.</p>
+        </div>
+      </div>
+    `;
+  }
 
   return `
     <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4">
@@ -85,6 +105,28 @@ function descriptionTemplate(text) {
 }
 
 function specialtyItemTemplate(item) {
+  const hasPrice = Number.isFinite(Number(item.priceToman)) && Number(item.priceToman) > 0;
+  const hasDuration = Number.isFinite(Number(item.durationMin)) && Number(item.durationMin) > 0;
+
+  const metaParts = [
+    hasPrice
+      ? `
+        <span class="inline-flex items-center gap-1">
+          <span class="text-primary-900">${iconMoney("size-4")}</span>
+          <span>${escapeHtml(formatTomanShort(item.priceToman))}</span>
+        </span>
+      `
+      : null,
+    hasDuration
+      ? `
+        <span class="inline-flex items-center gap-1">
+          <span class="text-primary-900">${iconClock("size-4")}</span>
+          <span>${formatNumberFa(item.durationMin)} دقیقه</span>
+        </span>
+      `
+      : null,
+  ].filter(Boolean);
+
   return `
     <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4 shadow-sm">
       <div class="flex items-start justify-between gap-3">
@@ -96,26 +138,28 @@ function specialtyItemTemplate(item) {
             </div>
           </div>
 
-          <div class="mt-2 flex flex-wrap items-center gap-4 text-xs text-neutral-700">
-            <span class="inline-flex items-center gap-1">
-              <span class="text-primary-900">${iconMoney("size-4")}</span>
-              <span>${escapeHtml(formatTomanShort(item.priceToman))}</span>
-            </span>
-
-            <span class="inline-flex items-center gap-1">
-              <span class="text-primary-900">${iconClock("size-4")}</span>
-              <span>${formatNumberFa(item.durationMin)} دقیقه</span>
-            </span>
-          </div>
+          ${
+            metaParts.length
+              ? `
+                <div class="mt-2 flex flex-wrap items-center gap-4 text-xs text-neutral-700">
+                  ${metaParts.join("")}
+                </div>
+              `
+              : `
+                <div class="mt-2 text-xs text-neutral-700">
+                  جزئیات قیمت/مدت زمان ثبت نشده است.
+                </div>
+              `
+          }
         </div>
-
-        <!-- ✅ دایره حذف شد -->
       </div>
     </div>
   `;
 }
 
 function template(model) {
+  const hasSpecialties = Array.isArray(model.specialties) && model.specialties.length > 0;
+
   return `
     <div class="space-y-4">
       ${descriptionTemplate(model.description)}
@@ -127,7 +171,15 @@ function template(model) {
         </div>
 
         <div class="mt-3 space-y-3">
-          ${model.specialties.map((it) => specialtyItemTemplate(it)).join("")}
+          ${
+            hasSpecialties
+              ? model.specialties.map((it) => specialtyItemTemplate(it)).join("")
+              : `
+                <div class="rounded-2xl border border-neutral-50 bg-neutral-0 p-4 text-sm text-neutral-700">
+                  تخصصی برای این متخصص ثبت نشده است.
+                </div>
+              `
+          }
         </div>
       </div>
     </div>

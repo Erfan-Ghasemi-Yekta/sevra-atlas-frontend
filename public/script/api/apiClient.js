@@ -144,3 +144,53 @@ export const servicesApi = {
     return res?.data ?? res;
   },
 };
+
+// ---------- Artists APIs ----------
+
+export const artistsApi = {
+  /**
+   * Get artist (staff) by id or slug
+   * GET /artists/{idOrSlug}
+   */
+  async getByIdOrSlug(idOrSlug) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/artists/${safe}`);
+    return res?.data ?? res;
+  },
+
+  /**
+   * List reviews for an artist
+   * GET /artists/{idOrSlug}/reviews
+   */
+  async listReviews(idOrSlug, { page, limit } = {}) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/artists/${safe}/reviews`, {
+      query: { page, limit },
+    });
+    return res?.data ?? res;
+  },
+
+  /**
+   * (Needs backend) List gallery items for an artist
+   * Expected GET /artists/{idOrSlug}/gallery
+   * Recommended response:
+   *  - { items: Media[], total: number } OR Media[]
+   */
+  async listGallery(idOrSlug, { page, limit } = {}) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/artists/${safe}/gallery`, {
+      query: { page, limit },
+    });
+    return res?.data ?? res;
+  },
+
+  /**
+   * (Needs backend) List specialties for an artist
+   * Expected GET /artists/{idOrSlug}/specialties
+   */
+  async listSpecialties(idOrSlug) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/artists/${safe}/specialties`);
+    return res?.data ?? res;
+  },
+};
