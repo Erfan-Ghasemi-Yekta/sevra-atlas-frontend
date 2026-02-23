@@ -5,7 +5,7 @@ export function mountSearchBar(rootEl, props = {}) {
 
   const {
     id = "landingSearch",
-    placeholder = "سالن، آرایشگران، خدمات…",
+    placeholder = "سالن، کارکنان، خدمات…",
     initialValue = "",
     autoFocus = false,
     onChange, // (value) => void
@@ -89,8 +89,8 @@ function template({ id, placeholder, initialValue }) {
   return `
     <form data-sb-form="${id}" class="w-full">
       <div class="relative">
-        <!-- Icon (right) -->
-        <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-neutral-500">
+        <!-- Search icon (left) -->
+        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[#484848]">
           <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M10 4a6 6 0 104.472 10.03l3.749 3.75a1 1 0 001.414-1.415l-3.75-3.749A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/>
           </svg>
@@ -98,28 +98,30 @@ function template({ id, placeholder, initialValue }) {
 
         <input
           data-sb-input="${id}"
-          type="search"
+          type="text"
           inputmode="search"
           autocomplete="off"
           spellcheck="false"
           value="${escapeHtml(initialValue)}"
           placeholder="${escapeHtml(placeholder)}"
           aria-label="جستجو"
-          class="w-full h-11 rounded-full bg-white
-                 border border-neutral-100
-                 shadow-[0_8px_18px_rgba(0,0,0,0.06)]
-                 pr-11 pl-10 text-[13px] leading-none text-neutral-800
-                 placeholder:text-neutral-400
-                 focus:outline-none focus:border-neutral-200 focus:ring-0
+          class="w-full h-11 rounded-2xl bg-[#FBFBFB]
+                 border border-[#F0F1F7]
+                 shadow-[0_10px_24px_rgba(49,49,49,0.12)]
+                 pr-14 pl-11 text-[13px] leading-none text-[#313131]
+                 placeholder:text-[#484848]/60
+                 focus:outline-none focus:border-[#B13A62]
+                 focus:shadow-[0_12px_28px_rgba(177,58,98,0.18)]
                  transition"
         />
 
-        <!-- Clear (left) -->
+        <!-- Clear (right) -->
         <button
           type="button"
           data-sb-clear="${id}"
-          class="hidden absolute inset-y-0 left-3 my-auto h-8 w-8 rounded-full
-                 grid place-items-center text-neutral-500 hover:bg-neutral-50 active:scale-[0.98] transition"
+          class="hidden absolute inset-y-0 right-3 my-auto h-8 w-8 rounded-full
+                 grid place-items-center text-[#484848]/70
+                 hover:bg-[#F0F1F7] active:scale-[0.98] transition"
           aria-label="پاک کردن"
         >
           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -127,10 +129,6 @@ function template({ id, placeholder, initialValue }) {
           </svg>
         </button>
       </div>
-
-      <p class="mt-2 text-[11px] text-neutral-400">
-        برای شروع، نام سالن یا خدمت رو تایپ کن.
-      </p>
     </form>
   `;
 }

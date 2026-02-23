@@ -1,5 +1,6 @@
-import { mountHeader } from "./components/header.js";
-import { createCommentsClient, mountComments } from "./components/comments.js";
+import { mountHeader } from "/public/script/components/header.js";
+import { createCommentsClient, mountComments } from "/public/script/components/comments.js";
+import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 const headerRoot = document.getElementById("app-header");
 mountHeader(headerRoot, {
@@ -7,6 +8,7 @@ mountHeader(headerRoot, {
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });
+enableStickyHeader(headerRoot, { threshold: 8 });
 
 const root = document.getElementById("comments-page");
 if (!root) throw new Error("Missing #comments-page root");

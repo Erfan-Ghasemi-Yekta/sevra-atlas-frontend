@@ -2,14 +2,22 @@
 
 import { mountHeader } from "/public/script/components/header.js";
 import { mountSearchBar } from "/public/script/components/landing-searchBar.js";
+import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
+// --- Header ---
 const headerRoot = document.getElementById("appHeader");
+
 mountHeader(headerRoot, {
-logoSrc: "/public/assets/img/logo.png",
+  // اگر لوگو داری مسیر بده
+  // logoSrc: "./assets/img/logo.png",
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });
 
+// Sticky effects (shadow/border on scroll)
+enableStickyHeader(headerRoot, { threshold: 8 });
+
+// --- Search Bar ---
 const searchRoot = document.getElementById("searchMount");
 
 mountSearchBar(searchRoot, {
@@ -18,19 +26,18 @@ mountSearchBar(searchRoot, {
   minChars: 0,
 
   onChange: (value) => {
-    // فعلاً فقط لاگ. بعداً اینجا می‌تونی API call یا فیلتر کارت‌ها رو بزنی.
+    // فعلاً فقط لاگ — بعداً اینجا API یا فیلتر کارت‌ها
     console.log("search change:", value);
   },
 
   onSubmit: (value) => {
     console.log("search submit:", value);
-    // مثال: رفتن به صفحه نتایج (بعداً اگر ساختی)
+    // مثال: رفتن به صفحه نتایج
     // window.location.href = `/public/salon.html?q=${encodeURIComponent(value)}`;
   },
 });
 
-// (اختیاری) نمونه استفاده از event های کامپوننت بدون import callback
+// (اختیاری) Event-based usage بدون coupling مستقیم
 document.addEventListener("search:submit", (e) => {
-  // e.detail.value
-  // این سبک به ماژولار بودن کمک می‌کنه چون وابستگی مستقیم کمتر میشه.
+  // console.log("event search submit:", e.detail.value);
 });

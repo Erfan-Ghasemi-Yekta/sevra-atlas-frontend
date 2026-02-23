@@ -3,6 +3,7 @@ import { mountStaffPortfolio, createStaffPortfolioClient } from "/public/script/
 import { mountStaffProfile } from "/public/script/components/staff-Profile.js";
 import { mountStaffDetails } from "/public/script/components/staff-Details.js";
 import { artistsApi } from "/public/script/api/apiClient.js";
+import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 function escapeHtml(str = "") {
   return String(str)
@@ -122,6 +123,7 @@ mountHeader(headerRoot, {
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });
+enableStickyHeader(headerRoot, { threshold: 8 });
 
 // ---------------- Page wiring ----------------
 

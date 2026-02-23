@@ -3,8 +3,8 @@
 import { mountHeader } from "/public/script/components/header.js";
 import { mountSalonGallery } from "/public/script/components/salon-Gallery.js";
 import { mountSalonDetails } from "/public/script/components/salon-Details.js";
-
 import { salonsApi, servicesApi } from "/public/script/api/apiClient.js";
+import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 // ----------------- helpers -----------------
 function escapeHtml(str = "") {
@@ -67,6 +67,7 @@ mountHeader(headerRoot, {
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });
+enableStickyHeader(headerRoot, { threshold: 8 });
 
 // ----------------- roots -----------------
 const galleryRoot = document.getElementById("salon-gallery");

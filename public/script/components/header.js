@@ -9,7 +9,7 @@ function headerTemplate({ logoSrc, logoAlt, cityLabel }) {
       <div dir="ltr" class="h-14 px-4 flex items-center justify-between gap-3">
         
         <!-- Left: Logo -->
-        <a href="/public/salon.html" class="flex items-center gap-2 min-w-0">
+        <a href="/public/index.html" class="flex items-center gap-2 min-w-0">
           ${logoNode}
         </a>
 
