@@ -1,5 +1,6 @@
 function galleryTemplate({ images = [], alt = "Salon image" }) {
   const safeImages = images.length ? images : ["https://picsum.photos/800/500?random=1"];
+  const showControls = safeImages.length > 1;
 
   const dots = safeImages
     .map(
@@ -58,34 +59,40 @@ function galleryTemplate({ images = [], alt = "Salon image" }) {
         <div class="relative h-48">
           ${slides}
 
-          <!-- Prev (left) -->
-          <button
-            type="button"
-            class="absolute left-2 top-1/2 -translate-y-1/2 grid place-items-center size-11 bg-transparent active:scale-95 transition"
-            aria-label="Previous image"
-            data-prev
-          >
-            <span class="block rotate-180">
-              ${arrowSvg}
-            </span>
-          </button>
+          ${
+            showControls
+              ? `
+                <!-- Prev (left) -->
+                <button
+                  type="button"
+                  class="absolute left-2 top-1/2 -translate-y-1/2 grid place-items-center size-11 bg-transparent active:scale-95 transition"
+                  aria-label="Previous image"
+                  data-prev
+                >
+                  <span class="block rotate-180">
+                    ${arrowSvg}
+                  </span>
+                </button>
 
-          <!-- Next (right) -->
-          <button
-            type="button"
-            class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center size-11 bg-transparent active:scale-95 transition"
-            aria-label="Next image"
-            data-next
-          >
-            ${arrowSvg}
-          </button>
+                <!-- Next (right) -->
+                <button
+                  type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center size-11 bg-transparent active:scale-95 transition"
+                  aria-label="Next image"
+                  data-next
+                >
+                  ${arrowSvg}
+                </button>
 
-          <!-- Dots (no pill background, like the screenshot) -->
-          <div class="absolute bottom-3 left-1/2 -translate-x-1/2">
-            <div class="flex items-center gap-2">
-              ${dots}
-            </div>
-          </div>
+                <!-- Dots (no pill background, like the screenshot) -->
+                <div class="absolute bottom-3 left-1/2 -translate-x-1/2">
+                  <div class="flex items-center gap-2">
+                    ${dots}
+                  </div>
+                </div>
+              `
+              : ""
+          }
         </div>
       </div>
     </section>
@@ -103,6 +110,9 @@ function initGallery(rootEl) {
   const dots = [...rootEl.querySelectorAll("[data-dot]")];
   const prevBtn = rootEl.querySelector("[data-prev]");
   const nextBtn = rootEl.querySelector("[data-next]");
+
+  // اگر فقط یک عکس داریم، هیچ کنترلی لازم نیست.
+  if (slides.length <= 1) return;
 
   let index = 0;
 
