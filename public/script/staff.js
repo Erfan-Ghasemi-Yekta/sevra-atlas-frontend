@@ -118,7 +118,7 @@ function mapSpecialties(input) {
 
 const headerRoot = document.getElementById("app-header");
 mountHeader(headerRoot, {
-  logoSrc: "/public/assent/img/logo.jpg",
+  logoSrc: "/public/assent/img/logo.png",
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });
