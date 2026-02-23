@@ -90,7 +90,7 @@ function template({ id, placeholder, initialValue }) {
     <form data-sb-form="${id}" class="w-full">
       <div class="relative">
         <!-- Search icon (left) -->
-        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[#484848]">
+        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-neutral-700">
           <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M10 4a6 6 0 104.472 10.03l3.749 3.75a1 1 0 001.414-1.415l-3.75-3.749A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/>
           </svg>
@@ -105,13 +105,13 @@ function template({ id, placeholder, initialValue }) {
           value="${escapeHtml(initialValue)}"
           placeholder="${escapeHtml(placeholder)}"
           aria-label="جستجو"
-          class="w-full h-11 rounded-2xl bg-[#FBFBFB]
-                 border border-[#F0F1F7]
-                 shadow-[0_10px_24px_rgba(49,49,49,0.12)]
-                 pr-14 pl-11 text-[13px] leading-none text-[#313131]
-                 placeholder:text-[#484848]/60
-                 focus:outline-none focus:border-[#B13A62]
-                 focus:shadow-[0_12px_28px_rgba(177,58,98,0.18)]
+          class="w-full h-11 rounded-2xl bg-white
+                 border border-neutral-900
+                 shadow-md
+                 pr-14 pl-11 text-[13px] leading-none text-neutral-900
+                 placeholder:text-neutral-700/60
+                 focus:outline-none focus:border-primary-600
+                 focus:ring-2 focus:ring-primary-600/20
                  transition"
         />
 
@@ -120,8 +120,8 @@ function template({ id, placeholder, initialValue }) {
           type="button"
           data-sb-clear="${id}"
           class="hidden absolute inset-y-0 right-3 my-auto h-8 w-8 rounded-full
-                 grid place-items-center text-[#484848]/70
-                 hover:bg-[#F0F1F7] active:scale-[0.98] transition"
+                 grid place-items-center text-neutral-700/70
+                 hover:bg-neutral-50 active:scale-[0.98] transition"
           aria-label="پاک کردن"
         >
           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
