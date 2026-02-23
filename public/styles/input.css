@@ -22,3 +22,11 @@ html, body {
 
 /* Custom helpers for redesigned salon header */
 .salon-avatar{overflow:hidden;}
+
+
+/* Hide native scrollbars on carousels (still scrollable) */
+.no-scrollbar{scrollbar-width:none;-ms-overflow-style:none;}
+.no-scrollbar::-webkit-scrollbar{display:none;}
+
+/* Better tap feel on mobile */
+.tap-highlight-none{-webkit-tap-highlight-color:transparent;}
