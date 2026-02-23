@@ -210,7 +210,7 @@ function detailsTemplate(props) {
     })
     .join("");
 
-  const DEFAULT_AVATAR_SRC = "/public/assent/img/img-for-test/img-1.jpg";
+  const DEFAULT_AVATAR_SRC = "/public/assets/img/img-for-test/img-1.jpg";
 
 const avatarNode = `<img
   src="${escapeHtml(avatarSrc || DEFAULT_AVATAR_SRC)}"
