@@ -169,6 +169,8 @@ function cardTemplate(staff = {}) {
 
   const initial = String(name || "—").trim().slice(0, 1) || "—";
 
+  const reviewCount = getReviewsCount(reviewsCount, reviewsText);
+
   return `
     <article
       class="bg-white rounded-[26px] border border-neutral-50
@@ -199,17 +201,20 @@ function cardTemplate(staff = {}) {
         <div class="flex items-start justify-between gap-2">
           <h3 class="text-[20px] font-semibold text-primary-900 truncate">${escapeHtml(name)}</h3>
 
-          <div class="flex items-center gap-1 text-[12px] font-semibold tabular-nums">
-            <span class="text-accent-500" aria-hidden="true">★</span>
-            <span class="text-neutral-900">${escapeHtml(formatRating(rating))}</span>
+          <div class="flex flex-col items-end leading-[1.1] shrink-0">
+            <div class="flex items-center gap-1 text-[12px] font-semibold tabular-nums">
+              <span class="text-accent-500" aria-hidden="true">★</span>
+              <span class="text-neutral-900">${escapeHtml(formatRating(rating))}</span>
+            </div>
+
+            ${reviewCount ? `<div class="mt-0.5 text-[10px] text-neutral-600 tabular-nums">${escapeHtml(String(reviewCount))} نظر</div>` : ``}
           </div>
         </div>
 
         <div class="mt-1 text-[11px] leading-6 text-neutral-700">
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
             ${jobsDoneText ? `<span>${escapeHtml(jobsDoneText)}</span>` : ""}
-            ${renderReviewsLine(reviewsCount, reviewsText)}
-          </div>
+</div>
           ${specialty ? `<div class="mt-0.5 truncate">${escapeHtml(specialty)}</div>` : ""}
         </div>
 
@@ -230,11 +235,16 @@ function cardTemplate(staff = {}) {
   `;
 }
 
-function renderReviewsLine(reviewsCount, reviewsText) {
-  const count =
+function getReviewsCount(reviewsCount, reviewsText) {
+  return (
     reviewsCount ??
-    // fallback: extract first numeric chunk from "نظرات (۱۳ نظر)" or similar
-    String(reviewsText || "").match(/[0-9۰-۹]+/)?.[0];
+    String(reviewsText || "").match(/[0-9۰-۹]+/)?.[0] ??
+    ""
+  );
+}
+
+function renderReviewsLine(reviewsCount, reviewsText) {
+  const count = getReviewsCount(reviewsCount, reviewsText);
 
   if (!count) return "";
   return `<span>${escapeHtml(String(count))} نظر</span>`;

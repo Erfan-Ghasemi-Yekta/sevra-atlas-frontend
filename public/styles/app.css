@@ -14,6 +14,7 @@
     --color-neutral-100: oklch(97% 0 0);
     --color-neutral-400: oklch(70.8% 0 0);
     --color-neutral-500: oklch(55.6% 0 0);
+    --color-neutral-600: oklch(43.9% 0 0);
     --color-neutral-700: #484848;
     --color-neutral-900: #313131;
     --color-white: #fff;
@@ -611,6 +612,9 @@
   .items-center {
     align-items: center;
   }
+  .items-end {
+    align-items: flex-end;
+  }
   .items-start {
     align-items: flex-start;
   }
@@ -934,6 +938,9 @@
   .text-\[2px\] {
     font-size: 2px;
   }
+  .text-\[10px\] {
+    font-size: 10px;
+  }
   .text-\[11px\] {
     font-size: 11px;
   }
@@ -969,6 +976,10 @@
   .leading-7 {
     --tw-leading: calc(var(--spacing) * 7);
     line-height: calc(var(--spacing) * 7);
+  }
+  .leading-\[1\.1\] {
+    --tw-leading: 1.1;
+    line-height: 1.1;
   }
   .leading-none {
     --tw-leading: 1;
@@ -1011,6 +1022,9 @@
   }
   .text-neutral-500 {
     color: var(--color-neutral-500);
+  }
+  .text-neutral-600 {
+    color: var(--color-neutral-600);
   }
   .text-neutral-700 {
     color: var(--color-neutral-700);
