@@ -17,23 +17,26 @@
   class="sticky top-0 z-50 bg-neutral-0 backdrop-blur-md transition-shadow"
 ></div>
 
-    <main class="px-4 pt-8 pb-16">
+    <main class="px-4 pt-2 pb-16">
 <section class="mx-auto max-w-md">
-  <!-- Hero images (قبل از سرچ) -->
-  <div class="w-full flex flex-col items-center gap-4 mb-6">
-    <img
-      src="/public/assets/img/transparent.png"
-      alt=""
-      class="w-full max-w-sm select-none pointer-events-none"
-      draggable="false"
-    />
-    <img
-      src="/public/assets/img/عـــید_نزدیکـــــه_ها_!_هــمــین_الان_وقـــت_بگــــــــــــــــ.png"
-      alt="عید نزدیکه‌ها! همین الان وقت بگیر!"
-      class="w-full max-w-sm select-none pointer-events-none"
-      draggable="false"
-    />
-  </div>
+<!-- Hero images (قبل از سرچ) -->
+<div class="relative w-full max-w-sm mx-auto mb-4 overflow-hidden h-[430px] -mt-2">
+  <!-- تصویر بالایی -->
+  <img
+    src="/public/assets/img/transparent.png"
+    alt=""
+    class="absolute left-0 w-full select-none pointer-events-none top-[-80px]"
+    draggable="false"
+  />
+
+  <!-- تصویر تیتر -->
+  <img
+    src="/public/assets/img/عـــید_نزدیکـــــه_ها_!_هــمــین_الان_وقـــت_بگــــــــــــــــ.png"
+    alt="عید نزدیکه‌ها! همین الان وقت بگیر!"
+    class="absolute left-0 w-full select-none pointer-events-none bottom-[-20px]"
+    draggable="false"
+  />
+</div>
 
   <!-- Search -->
   <div id="searchMount"></div>
