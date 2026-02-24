@@ -87,32 +87,32 @@ function template({ title, ctaText, ctaHref, items }) {
   const safe = Array.isArray(items) ? items : [];
 
   return `
-    <section class="w-full tap-highlight-none" aria-label="${escapeHtml(title)}">
-      <div class="relative mb-3">
+    <section class="w-full tap-highlight-none bg-white" aria-label="${escapeHtml(title)}">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="flex-1 text-right text-[14px] font-semibold text-neutral-900">
+          ${escapeHtml(title)}
+        </h2>
+
         <a
           data-popularsalons-cta
           href="${escapeHtml(ctaHref)}"
-          class="absolute left-0 top-1 inline-flex items-center gap-1 text-[12px] font-medium text-primary-900
+          class="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-primary-900
                  hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20 rounded-lg px-2 py-1"
         >
           <span>${escapeHtml(ctaText)}</span>
           <span aria-hidden="true" class="text-primary-900">‹</span>
         </a>
-
-        <h2 class="text-center text-[14px] font-semibold text-neutral-900">
-          ${escapeHtml(title)}
-        </h2>
       </div>
 
       <div
         data-popularsalons-track
-        class="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
+        class="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory bg-white pb-2"
         aria-label="لیست محبوب‌ترین سالن‌ها"
       >
         ${safe.map((item, idx) => slideTemplate(item, idx)).join("")}
       </div>
 
-      <div class="mt-3 flex items-center justify-center gap-2" aria-label="نشانگر اسلایدها">
+      <div class="mt-3 flex items-center justify-center gap-2 bg-white" aria-label="نشانگر اسلایدها">
         ${safe
           .map(
             (_, idx) =>
@@ -146,12 +146,12 @@ function cardTemplate(item = {}) {
 
   return `
     <article
-      class="bg-white rounded-[28px] border border-neutral-50
+      class="bg-white rounded-[28px] border border-neutral-100
              shadow-[0_10px_24px_rgba(49,49,49,0.10)]
              overflow-hidden"
     >
       <a href="${escapeHtml(href)}" class="block">
-        <div class="relative h-[190px] w-full bg-neutral-50 overflow-hidden">
+        <div class="relative h-[190px] w-full bg-white overflow-hidden">
           ${imageSrc ? `<img src="${escapeHtml(imageSrc)}" alt="" class="h-full w-full object-cover" />` : ""}
 
           <!-- Badges (top-left like design) -->

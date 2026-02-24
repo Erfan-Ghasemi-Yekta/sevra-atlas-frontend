@@ -612,6 +612,9 @@
   .flex-col {
     flex-direction: column;
   }
+  .flex-row-reverse {
+    flex-direction: row-reverse;
+  }
   .flex-wrap {
     flex-wrap: wrap;
   }
@@ -733,6 +736,9 @@
   }
   .border-neutral-50 {
     border-color: var(--color-neutral-50);
+  }
+  .border-neutral-100 {
+    border-color: var(--color-neutral-100);
   }
   .border-neutral-900 {
     border-color: var(--color-neutral-900);
