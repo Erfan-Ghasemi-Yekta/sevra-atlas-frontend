@@ -270,6 +270,9 @@
   .z-50 {
     z-index: 50;
   }
+  .z-\[1\] {
+    z-index: 1;
+  }
   .-mx-4 {
     margin-inline: calc(var(--spacing) * -4);
   }
@@ -548,6 +551,9 @@
   .rotate-180 {
     rotate: 180deg;
   }
+  .transform {
+    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+  }
   .animate-pulse {
     animation: var(--animate-pulse);
   }
@@ -562,6 +568,9 @@
   }
   .snap-center {
     scroll-snap-align: center;
+  }
+  .appearance-none {
+    appearance: none;
   }
   .flex-col {
     flex-direction: column;
@@ -661,6 +670,10 @@
   .border {
     border-style: var(--tw-border-style);
     border-width: 1px;
+  }
+  .border-0 {
+    border-style: var(--tw-border-style);
+    border-width: 0px;
   }
   .border-b {
     border-bottom-style: var(--tw-border-style);
@@ -779,6 +792,9 @@
   }
   .object-cover {
     object-fit: cover;
+  }
+  .p-0 {
+    padding: calc(var(--spacing) * 0);
   }
   .p-3 {
     padding: calc(var(--spacing) * 3);
@@ -1033,6 +1049,11 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .transition-transform {
+    transition-property: transform, translate, scale, rotate;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
   .duration-300 {
     --tw-duration: 300ms;
     transition-duration: 300ms;
@@ -1190,6 +1211,26 @@ html, body {
   syntax: "*";
   inherits: false;
   initial-value: 0;
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
 }
 @property --tw-scroll-snap-strictness {
   syntax: "*";
@@ -1416,6 +1457,11 @@ html, body {
       --tw-translate-x: 0;
       --tw-translate-y: 0;
       --tw-translate-z: 0;
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
       --tw-scroll-snap-strictness: proximity;
       --tw-space-y-reverse: 0;
       --tw-border-style: solid;

@@ -50,17 +50,36 @@ export function mountTopStaff(rootEl, props = {}) {
 
   // آپدیت دات فعال با IntersectionObserver (در RTL هم خوب کار می‌کند)
   if (track && slidesEls.length && dotEls.length && "IntersectionObserver" in window) {
+    // نکته: callback فقط entryهایی رو می‌ده که وضعیت‌شون عوض شده.
+    // اگر فقط بین همین entryها max بگیری، ممکنه لحظه‌ای dot برگرده به ۰ و بعد درست بشه.
+    // راه‌حل: آخرین intersectionRatio هر اسلاید رو نگه می‌داریم و از روی کل اسلایدها max می‌گیریم.
+    const ratios = new Map();
+    slidesEls.forEach((el) => {
+      const idx = Number(el.getAttribute("data-topstaff-slide"));
+      ratios.set(idx, 0);
+    });
+
+    const pickMostVisibleIdx = () => {
+      let bestIdx = 0;
+      let bestRatio = -1;
+      ratios.forEach((r, idx) => {
+        if (r > bestRatio) {
+          bestRatio = r;
+          bestIdx = idx;
+        }
+      });
+      return bestIdx;
+    };
+
     const obs = new IntersectionObserver(
       (entries) => {
-        // اولین اسلایدی که بیشترین دیده‌شدن رو دارد
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio || 0) - (a.intersectionRatio || 0))[0];
-
-        const idx = visible ? Number(visible.target.getAttribute("data-topstaff-slide")) : 0;
-        setActiveDot(dotEls, idx);
+        entries.forEach((e) => {
+          const idx = Number(e.target.getAttribute("data-topstaff-slide"));
+          ratios.set(idx, e.isIntersecting ? e.intersectionRatio || 0 : 0);
+        });
+        setActiveDot(dotEls, pickMostVisibleIdx());
       },
-      { root: track, threshold: [0.4, 0.6, 0.8] }
+      { root: track, threshold: [0.15, 0.3, 0.5, 0.7, 0.85] }
     );
 
     slidesEls.forEach((el) => obs.observe(el));
