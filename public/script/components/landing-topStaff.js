@@ -160,6 +160,7 @@ function cardTemplate(staff = {}) {
     name = "—",
     rating = 0,
     reviewsText = "",
+    reviewsCount,
     jobsDoneText = "",
     specialty = "",
     imageSrc = "",
@@ -170,13 +171,13 @@ function cardTemplate(staff = {}) {
 
   return `
     <article
-      class="bg-white rounded-[28px] border border-neutral-50
-             shadow-[0_18px_40px_-28px_rgba(0,0,0,0.45)]
-             px-4 py-3 flex items-center gap-3"
+      class="bg-white rounded-[26px] border border-neutral-50
+             shadow-[0_10px_24px_rgba(49,49,49,0.10)]
+             px-4 py-3 flex items-center gap-4"
     >
       <div
         data-topstaff-avatar-wrap
-        class="relative h-[84px] w-[112px] shrink-0 overflow-hidden rounded-2xl
+        class="relative h-[125px] w-[120px] shrink-0 overflow-hidden rounded-2xl
                bg-primary-600/15"
         aria-hidden="true"
       >
@@ -196,33 +197,47 @@ function cardTemplate(staff = {}) {
 
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-2">
-          <h3 class="text-[13px] font-semibold text-primary-900 truncate">${escapeHtml(name)}</h3>
+          <h3 class="text-[20px] font-semibold text-primary-900 truncate">${escapeHtml(name)}</h3>
 
-          <div class="flex items-center gap-1 text-[12px] font-semibold">
+          <div class="flex items-center gap-1 text-[12px] font-semibold tabular-nums">
             <span class="text-accent-500" aria-hidden="true">★</span>
             <span class="text-neutral-900">${escapeHtml(formatRating(rating))}</span>
           </div>
         </div>
 
-        <div class="mt-1 text-[11px] leading-5 text-neutral-700">
-          ${reviewsText ? `<div>${escapeHtml(reviewsText)}</div>` : ""}
-          ${jobsDoneText ? `<div>${escapeHtml(jobsDoneText)}</div>` : ""}
-          ${specialty ? `<div class="truncate">${escapeHtml(specialty)}</div>` : ""}
+        <div class="mt-1 text-[11px] leading-6 text-neutral-700">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+            ${jobsDoneText ? `<span>${escapeHtml(jobsDoneText)}</span>` : ""}
+            ${renderReviewsLine(reviewsCount, reviewsText)}
+          </div>
+          ${specialty ? `<div class="mt-0.5 truncate">${escapeHtml(specialty)}</div>` : ""}
         </div>
 
-        <a
-          href="${escapeHtml(profileHref)}"
-          class="mt-3 inline-flex h-9 items-center justify-center rounded-full bg-primary-900
-                 px-5 text-[12px] font-medium text-white shadow-sm
-                 hover:bg-primary-600 active:scale-[0.99] transition
-                 focus:outline-none focus:ring-2 focus:ring-primary-600/25"
-          aria-label="مشاهده پروفایل ${escapeHtml(name)}"
-        >
-          مشاهده پروفایل
-        </a>
+        <div class="mt-3 flex justify-end">
+          <a
+            href="${escapeHtml(profileHref)}"
+            class="inline-flex h-9 w-[100%] items-center justify-center rounded-xl bg-primary-900
+                   px-5 text-[12px] font-medium text-white shadow-sm
+                   hover:bg-primary-600 transition
+                   focus:outline-none focus:ring-2 focus:ring-primary-600/25"
+            aria-label="مشاهده پروفایل ${escapeHtml(name)}"
+          >
+            مشاهده پروفایل
+          </a>
+        </div>
       </div>
     </article>
   `;
+}
+
+function renderReviewsLine(reviewsCount, reviewsText) {
+  const count =
+    reviewsCount ??
+    // fallback: extract first numeric chunk from "نظرات (۱۳ نظر)" or similar
+    String(reviewsText || "").match(/[0-9۰-۹]+/)?.[0];
+
+  if (!count) return "";
+  return `<span>${escapeHtml(String(count))} نظر</span>`;
 }
 
 function setActiveDot(dotEls, idx) {
@@ -252,7 +267,7 @@ function defaultSlides() {
       {
         name: "سارا محسنی",
         rating: 4.8,
-        reviewsText: "نظرات (۱۳ نظر)",
+        reviewsCount: "۱۳",
         jobsDoneText: "۱۲۰ خدمت انجام‌شده",
         specialty: "ناخن‌کار، ترمیم و کاشت تخصصی",
         imageSrc: "",
@@ -261,7 +276,7 @@ function defaultSlides() {
       {
         name: "سارا محسنی",
         rating: 4.8,
-        reviewsText: "نظرات (۱۳ نظر)",
+        reviewsCount: "۱۳",
         jobsDoneText: "۱۲۰ خدمت انجام‌شده",
         specialty: "ناخن‌کار، ترمیم و کاشت تخصصی",
         imageSrc: "",

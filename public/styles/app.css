@@ -430,11 +430,23 @@
   .h-48 {
     height: calc(var(--spacing) * 48);
   }
+  .h-\[1px\] {
+    height: 1px;
+  }
   .h-\[18px\] {
     height: 18px;
   }
   .h-\[84px\] {
     height: 84px;
+  }
+  .h-\[90px\] {
+    height: 90px;
+  }
+  .h-\[104px\] {
+    height: 104px;
+  }
+  .h-\[125px\] {
+    height: 125px;
   }
   .h-\[430px\] {
     height: 430px;
@@ -490,17 +502,32 @@
   .w-56 {
     width: calc(var(--spacing) * 56);
   }
+  .w-\[10\%\] {
+    width: 10%;
+  }
   .w-\[18px\] {
     width: 18px;
   }
   .w-\[70\%\] {
     width: 70%;
   }
+  .w-\[82\%\] {
+    width: 82%;
+  }
   .w-\[90\%\] {
     width: 90%;
   }
+  .w-\[99\%\] {
+    width: 99%;
+  }
+  .w-\[100\%\] {
+    width: 100%;
+  }
   .w-\[112px\] {
     width: 112px;
+  }
+  .w-\[120px\] {
+    width: 120px;
   }
   .w-auto {
     width: auto;
@@ -593,6 +620,9 @@
   .justify-center {
     justify-content: center;
   }
+  .justify-end {
+    justify-content: flex-end;
+  }
   .justify-start {
     justify-content: flex-start;
   }
@@ -635,6 +665,9 @@
   .gap-y-1 {
     row-gap: calc(var(--spacing) * 1);
   }
+  .self-end {
+    align-self: flex-end;
+  }
   .truncate {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -654,6 +687,9 @@
   }
   .rounded-2xl {
     border-radius: var(--radius-2xl);
+  }
+  .rounded-\[26px\] {
+    border-radius: 26px;
   }
   .rounded-\[28px\] {
     border-radius: 28px;
@@ -892,6 +928,12 @@
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
   }
+  .text-\[1px\] {
+    font-size: 1px;
+  }
+  .text-\[2px\] {
+    font-size: 2px;
+  }
   .text-\[11px\] {
     font-size: 11px;
   }
@@ -903,6 +945,18 @@
   }
   .text-\[14px\] {
     font-size: 14px;
+  }
+  .text-\[16px\] {
+    font-size: 16px;
+  }
+  .text-\[20px\] {
+    font-size: 20px;
+  }
+  .text-\[25px\] {
+    font-size: 25px;
+  }
+  .text-\[50px\] {
+    font-size: 50px;
   }
   .leading-5 {
     --tw-leading: calc(var(--spacing) * 5);
@@ -942,6 +996,9 @@
   }
   .whitespace-pre-wrap {
     white-space: pre-wrap;
+  }
+  .text-\[px\] {
+    color: px;
   }
   .text-accent-500 {
     color: var(--color-accent-500);
