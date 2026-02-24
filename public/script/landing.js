@@ -4,6 +4,7 @@ import { mountHeader } from "/public/script/components/header.js";
 import { mountSearchBar } from "/public/script/components/landing-searchBar.js";
 import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 import { mountTopStaff } from "/public/script/components/landing-topStaff.js";
+import { mountPopularSalons } from "/public/script/components/landing-popularSalons.js";
 
 // --- Header ---
 const headerRoot = document.getElementById("appHeader");
@@ -35,6 +36,59 @@ mountSearchBar(searchRoot, {
     // مثال: رفتن به صفحه نتایج
     // window.location.href = `/public/salon.html?q=${encodeURIComponent(value)}`;
   },
+});
+
+// --- Popular Salons (static) ---
+const popularSalonsRoot = document.getElementById("popularSalonsMount");
+
+mountPopularSalons(popularSalonsRoot, {
+  title: "محبوب ترین سالن های زیبایی",
+  ctaText: "مشاهده همه",
+  ctaHref: "/public/salons.html",
+
+  // فعلاً استاتیک — بعداً از API پر می‌کنی
+  items: [
+    {
+      rank: 1,
+      city: "تهران",
+      views: 11,
+      name: "سالن زیبایی تهران",
+      subtitle: "کاشت ناخن | شروع قیمت ها از 150 هزار تومان",
+      imageSrc: "/public/assets/img/img-for-test/img-1.jpg",
+      detailsText: "جزئیات",
+      href: "/public/salon.html",
+    },
+    {
+      rank: 2,
+      city: "تهران",
+      views: 8,
+      name: "سالن لیدی لند",
+      subtitle: "میکاپ | شروع قیمت ها از 200 هزار تومان",
+      imageSrc: "/public/assets/img/img-for-test/img-2.jpg",
+      detailsText: "جزئیات",
+      href: "/public/salon.html",
+    },
+    {
+      rank: 3,
+      city: "تهران",
+      views: 15,
+      name: "سالن آریانا",
+      subtitle: "رنگ و لایت | شروع قیمت ها از 250 هزار تومان",
+      imageSrc: "/public/assets/img/img-for-test/img-3.jpg",
+      detailsText: "جزئیات",
+      href: "/public/salon.html",
+    },
+    {
+      rank: 4,
+      city: "تهران",
+      views: 6,
+      name: "سالن نیلوفر",
+      subtitle: "فیشال | شروع قیمت ها از 180 هزار تومان",
+      imageSrc: "/public/assets/img/img-for-test/img-4.jpg",
+      detailsText: "جزئیات",
+      href: "/public/salon.html",
+    },
+  ],
 });
 
 // --- Top Staff (static) ---
