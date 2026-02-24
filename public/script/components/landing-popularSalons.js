@@ -87,7 +87,7 @@ function template({ title, ctaText, ctaHref, items }) {
   const safe = Array.isArray(items) ? items : [];
 
   return `
-    <section class="w-full tap-highlight-none bg-white" aria-label="${escapeHtml(title)}">
+    <section class="w-full tap-highlight-none bg-white mt-24 mb-24" aria-label="${escapeHtml(title)}">
       <div class="mb-3 flex items-center justify-between">
         <h2 class="flex-1 text-right text-[14px] font-semibold text-neutral-900">
           ${escapeHtml(title)}
