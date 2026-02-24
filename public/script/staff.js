@@ -163,8 +163,7 @@ if (!artistIdOrSlug) {
     try {
       const [artist, specialtiesRaw] = await Promise.all([
         artistsApi.getByIdOrSlug(artistIdOrSlug),
-        // This endpoint is currently missing in atlas-API.yaml as GET.
-        // We still call it; if backend hasn't shipped it yet, we fall back to empty list.
+        // atlas-API.yaml: GET /artists/{idOrSlug}/specialties
         artistsApi.listSpecialties(artistIdOrSlug).catch(() => []),
       ]);
 

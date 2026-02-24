@@ -9,8 +9,7 @@ import { mountTopStaff } from "/public/script/components/landing-topStaff.js";
 const headerRoot = document.getElementById("appHeader");
 
 mountHeader(headerRoot, {
-  // اگر لوگو داری مسیر بده
-  // logoSrc: "./assets/img/logo.png",
+  logoSrc: "/public/assets/img/logo.png",
   logoAlt: "SEVRA",
   cityLabel: "شهر خود را انتخاب کنید",
 });

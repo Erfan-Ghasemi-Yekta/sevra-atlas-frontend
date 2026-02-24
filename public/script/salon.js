@@ -3,7 +3,7 @@
 import { mountHeader } from "/public/script/components/header.js";
 import { mountSalonGallery } from "/public/script/components/salon-Gallery.js";
 import { mountSalonDetails } from "/public/script/components/salon-Details.js";
-import { salonsApi, servicesApi } from "/public/script/api/apiClient.js";
+import { salonsApi } from "/public/script/api/apiClient.js";
 import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 // ----------------- helpers -----------------
@@ -27,6 +27,12 @@ function normalizeInstagram(insta = "") {
   if (s.startsWith("http://") || s.startsWith("https://")) return s;
   const handle = s.replace(/^@/, "");
   return `https://instagram.com/${encodeURIComponent(handle)}`;
+}
+
+function toNumberOrNull(v) {
+  if (v === undefined || v === null || v === "") return null;
+  const n = Number(String(v).replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) ? n : null;
 }
 
 function renderLoading(el, { height = 160 } = {}) {
@@ -95,27 +101,28 @@ async function main() {
   }
 
   try {
-    // fetch in parallel where possible
-    const [salon, serviceCategories] = await Promise.all([
+    // Fetch in parallel
+    const [salon, salonServices, salonGallery] = await Promise.all([
       salonsApi.getByIdOrSlug(idOrSlug),
-      servicesApi
-        .listCategories()
-        .catch(() => null), // اگر سرویس‌ها شکست خوردند، کل صفحه نخوابد
+      // Newer API: salon-specific services (has price/duration per salon)
+      salonsApi.listServices(idOrSlug).catch(() => []),
+      // Newer API: salon gallery (paginated)
+      salonsApi.listGallery(idOrSlug, { page: 1, pageSize: 30 }).catch(() => null),
     ]);
 
-    // -------- Gallery (API فعلاً فقط avatar دارد) --------
+    // -------- Gallery --------
     const avatarUrl = salon?.avatar?.url || "";
-    if (avatarUrl) {
-      mountSalonGallery(galleryRoot, {
-        images: [avatarUrl],
-        alt: salon?.name || "Salon",
-      });
-    } else {
-      // هیچ چیز استاتیکی نمایش نده
-      if (galleryRoot) galleryRoot.innerHTML = "";
+    const galleryItems = Array.isArray(salonGallery?.items) ? salonGallery.items : [];
+    const galleryUrls = galleryItems.map((m) => m?.url).filter(Boolean);
+
+    const images = galleryUrls.length ? galleryUrls : avatarUrl ? [avatarUrl] : [];
+    if (images.length) {
+      mountSalonGallery(galleryRoot, { images, alt: salon?.name || "Salon" });
+    } else if (galleryRoot) {
+      galleryRoot.innerHTML = "";
     }
 
-    // -------- Tabs (بدون نمونه‌ی استاتیک) --------
+    // -------- Tabs --------
     const tabs = [];
 
     // About tab (description/summary + contact)
@@ -184,23 +191,44 @@ async function main() {
       content: `<div class="space-y-3">${aboutParts.join("") || `<div class="text-sm text-neutral-700">توضیحاتی ثبت نشده است.</div>`}</div>`,
     });
 
-    // Services tab (از API /services - فعلاً عمومی است نه مخصوص سالن)
+    // Services tab (salon-specific)
+    const groups = Array.isArray(salonServices) ? salonServices : [];
+    const hasAnyService = groups.some((g) => Array.isArray(g?.services) && g.services.length);
+
     let servicesModel = null;
-    if (Array.isArray(serviceCategories) && serviceCategories.length) {
+    if (hasAnyService) {
       servicesModel = {
         title: "سرویس‌ها",
-        categories: serviceCategories.map((c, idx) => ({
-          id: c?.id || `cat-${idx + 1}`,
-          title: c?.nameFa || c?.title || "بدون عنوان",
-          items: Array.isArray(c?.services)
-            ? c.services.map((s) => ({
-                id: s?.id,
-                title: s?.nameFa || "",
-                note: s?.description || "",
-                // price/duration نداریم توی API فعلی -> UI خودش "—" می‌گذارد
-              }))
-            : [],
-        })),
+        categories: groups
+          .map((g, idx) => {
+            const cat = g?.category || {};
+            const services = Array.isArray(g?.services) ? g.services : [];
+
+            const items = services
+              .filter((s) => s && (s.isActive === undefined || s.isActive === true))
+              .map((s, sIdx) => {
+                const priceNum = toNumberOrNull(s?.priceToman);
+                const durationNum = s?.durationMin === null || s?.durationMin === undefined ? null : Number(s.durationMin);
+
+                return {
+                  id: String(s?.serviceId ?? s?.id ?? `${cat?.id || idx}-${sIdx}`),
+                  title: s?.nameFa || s?.title || "",
+                  note: s?.notes || s?.note || s?.description || "",
+                  // Keep both naming styles (in case UI component expects one)
+                  priceToman: priceNum,
+                  price: priceNum,
+                  durationMin: Number.isFinite(durationNum) ? durationNum : null,
+                  duration: Number.isFinite(durationNum) ? durationNum : null,
+                };
+              });
+
+            return {
+              id: cat?.id || `cat-${idx + 1}`,
+              title: cat?.nameFa || cat?.title || "بدون عنوان",
+              items,
+            };
+          })
+          .filter((c) => c.items && c.items.length),
       };
 
       tabs.push({

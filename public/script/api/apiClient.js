@@ -4,13 +4,47 @@
  * Centralized API client for Sevra Atlas Frontend
  * - Change BASE_URL here and everything updates.
  * - Provides a small, consistent wrapper around fetch + API envelope { success, data, ... }.
+ *
+ * Based on atlas-API.yaml (servers.url = /api/v1)
  */
 
-const DEFAULT_BASE_URL = "https://atom-game.ir/api/v1"; // مطابق atlas-API.yaml -> servers.url
-let BASE_URL = DEFAULT_BASE_URL;
+const DEFAULT_BASE_URL = "https://atom-game.ir/api/v1";
+const STORAGE_KEY = "SEVRA_API_BASE_URL";
 
-export function setApiBaseUrl(nextBaseUrl) {
-  BASE_URL = String(nextBaseUrl || "").replace(/\/+$/, "") || DEFAULT_BASE_URL;
+
+function readInitialBaseUrl() {
+  try {
+    const fromGlobal = typeof window !== "undefined" ? window.__SEVRA_API_BASE_URL__ : null;
+    const fromStorage = typeof localStorage !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    const candidate = fromGlobal || fromStorage || DEFAULT_BASE_URL;
+    return String(candidate || "").replace(/\/+$/, "") || DEFAULT_BASE_URL;
+  } catch {
+    return DEFAULT_BASE_URL;
+  }
+}
+
+let BASE_URL = readInitialBaseUrl();
+
+export function setApiBaseUrl(nextBaseUrl, { persist = false } = {}) {
+  const cleaned = String(nextBaseUrl || "").replace(/\/+$/, "") || DEFAULT_BASE_URL;
+  BASE_URL = cleaned;
+
+  if (persist) {
+    try {
+      localStorage.setItem(STORAGE_KEY, cleaned);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+export function clearApiBaseUrl() {
+  BASE_URL = DEFAULT_BASE_URL;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
 }
 
 export function getApiBaseUrl() {
@@ -35,18 +69,30 @@ function buildUrl(path, query) {
 
   if (query && typeof query === "object") {
     for (const [k, v] of Object.entries(query)) {
-      if (v === undefined || v === null) continue;
+      if (v === undefined || v === null || v === "") continue;
       url.searchParams.set(k, String(v));
     }
   }
+
   return url;
 }
 
 async function safeReadJson(res) {
+  // Some endpoints may return 204 or empty bodies.
+  if (res.status === 204) return null;
+
   const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return res.json();
+  if (ct.includes("application/json")) {
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
   // fallback: try parse anyway
   const text = await res.text();
+  if (!text) return null;
   try {
     return JSON.parse(text);
   } catch {
@@ -67,7 +113,8 @@ export async function apiRequest(
     body,
     headers,
     signal,
-    authToken, // optional; if you ever need protected endpoints
+    authToken, // optional; for protected endpoints
+    credentials = "same-origin", // can be overridden (e.g. "include")
   } = {}
 ) {
   const url = buildUrl(path, query);
@@ -100,7 +147,7 @@ export async function apiRequest(
     headers: finalHeaders,
     body: finalBody,
     signal,
-    credentials: "same-origin",
+    credentials,
   });
 
   const payload = await safeReadJson(res);
@@ -114,7 +161,7 @@ export async function apiRequest(
     throw new ApiError(msg, { status: res.status, details: payload, url: url.toString() });
   }
 
-  // Envelope failure
+  // Envelope failure (most endpoints in atlas-API.yaml use this)
   if (payload && payload.success === false) {
     const msg = payload.message || "API returned success=false";
     throw new ApiError(msg, {
@@ -131,16 +178,78 @@ export async function apiRequest(
 // ---------- Domain APIs (small, clean, modular) ----------
 
 export const salonsApi = {
+  async list(filters = {}) {
+    // GET /salons
+    const res = await apiRequest(`/salons`, {
+      query: {
+        q: filters.q,
+        province: filters.province,
+        city: filters.city,
+        neighborhood: filters.neighborhood,
+        service: filters.service,
+        verified: filters.verified,
+        minRating: filters.minRating,
+        minReviewCount: filters.minReviewCount,
+        womenOnly: filters.womenOnly,
+        priceTier: filters.priceTier,
+        sort: filters.sort,
+        page: filters.page,
+        pageSize: filters.pageSize,
+      },
+    });
+    return res?.data ?? res;
+  },
+
   async getByIdOrSlug(idOrSlug) {
     const safe = encodeURIComponent(String(idOrSlug));
     const res = await apiRequest(`/salons/${safe}`);
+    return res?.data ?? res;
+  },
+
+  async listReviews(idOrSlug) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/salons/${safe}/reviews`);
+    return res?.data ?? res;
+  },
+
+  async listArtists(idOrSlug, { page, pageSize } = {}) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/salons/${safe}/artists`, { query: { page, pageSize } });
+    return res?.data ?? res;
+  },
+
+  async getArtist(idOrSlug, artistId) {
+    const safeSalon = encodeURIComponent(String(idOrSlug));
+    const safeArtist = encodeURIComponent(String(artistId));
+    const res = await apiRequest(`/salons/${safeSalon}/artists/${safeArtist}`);
+    return res?.data ?? res;
+  },
+
+  async listServices(idOrSlug) {
+    // GET /salons/{idOrSlug}/services
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/salons/${safe}/services`);
+    return res?.data ?? res;
+  },
+
+  async listGallery(idOrSlug, { page, pageSize } = {}) {
+    // GET /salons/{idOrSlug}/gallery
+    const safe = encodeURIComponent(String(idOrSlug));
+    const res = await apiRequest(`/salons/${safe}/gallery`, { query: { page, pageSize } });
     return res?.data ?? res;
   },
 };
 
 export const servicesApi = {
   async listCategories() {
+    // GET /services
     const res = await apiRequest(`/services`);
+    return res?.data ?? res;
+  },
+
+  async getBySlug(slug) {
+    const safe = encodeURIComponent(String(slug));
+    const res = await apiRequest(`/services/${safe}`);
     return res?.data ?? res;
   },
 };
@@ -148,6 +257,25 @@ export const servicesApi = {
 // ---------- Artists APIs ----------
 
 export const artistsApi = {
+  async list(filters = {}) {
+    // GET /artists
+    const res = await apiRequest(`/artists`, {
+      query: {
+        q: filters.q,
+        city: filters.city,
+        neighborhood: filters.neighborhood,
+        specialty: filters.specialty,
+        verified: filters.verified,
+        minRating: filters.minRating,
+        minReviewCount: filters.minReviewCount,
+        sort: filters.sort,
+        page: filters.page,
+        pageSize: filters.pageSize,
+      },
+    });
+    return res?.data ?? res;
+  },
+
   /**
    * Get artist (staff) by id or slug
    * GET /artists/{idOrSlug}
@@ -162,35 +290,49 @@ export const artistsApi = {
    * List reviews for an artist
    * GET /artists/{idOrSlug}/reviews
    */
-  async listReviews(idOrSlug, { page, limit } = {}) {
+  async listReviews(idOrSlug) {
     const safe = encodeURIComponent(String(idOrSlug));
-    const res = await apiRequest(`/artists/${safe}/reviews`, {
-      query: { page, limit },
-    });
+    const res = await apiRequest(`/artists/${safe}/reviews`);
     return res?.data ?? res;
   },
 
   /**
-   * (Needs backend) List gallery items for an artist
-   * Expected GET /artists/{idOrSlug}/gallery
-   * Recommended response:
-   *  - { items: Media[], total: number } OR Media[]
+   * List gallery items for an artist
+   * GET /artists/{idOrSlug}/gallery
+   * Query: page, pageSize
    */
-  async listGallery(idOrSlug, { page, limit } = {}) {
+  async listGallery(idOrSlug, { page, pageSize } = {}) {
     const safe = encodeURIComponent(String(idOrSlug));
     const res = await apiRequest(`/artists/${safe}/gallery`, {
-      query: { page, limit },
+      query: { page, pageSize },
     });
     return res?.data ?? res;
   },
 
   /**
-   * (Needs backend) List specialties for an artist
-   * Expected GET /artists/{idOrSlug}/specialties
+   * List specialties for an artist
+   * GET /artists/{idOrSlug}/specialties
    */
   async listSpecialties(idOrSlug) {
     const safe = encodeURIComponent(String(idOrSlug));
     const res = await apiRequest(`/artists/${safe}/specialties`);
+    return res?.data ?? res;
+  },
+
+  // Optional upload helpers (if/when you add UI for them)
+  async uploadAvatar(idOrSlug, file, { authToken } = {}) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await apiRequest(`/artists/${safe}/avatar`, { method: "POST", body: fd, authToken });
+    return res?.data ?? res;
+  },
+
+  async uploadCover(idOrSlug, file, { authToken } = {}) {
+    const safe = encodeURIComponent(String(idOrSlug));
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await apiRequest(`/artists/${safe}/cover`, { method: "POST", body: fd, authToken });
     return res?.data ?? res;
   },
 };

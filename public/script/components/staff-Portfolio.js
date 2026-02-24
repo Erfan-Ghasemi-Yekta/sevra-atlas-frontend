@@ -54,19 +54,19 @@ function normalizeImages(input = []) {
 
 export function createStaffPortfolioClient({ routes = {} } = {}) {
   const defaultRoutes = {
-    // NOTE: This endpoint is NOT in the current atlas-API.yaml as a GET.
-    // Backend should implement GET /artists/{idOrSlug}/gallery for frontend read.
+    // atlas-API.yaml: GET /artists/{idOrSlug}/gallery (paginated)
     list: ({ idOrSlug }) => `/artists/${encodeURIComponent(String(idOrSlug))}/gallery`,
   };
 
   const r = { ...defaultRoutes, ...routes };
 
   return {
-    async list({ idOrSlug, page, limit, signal } = {}) {
+    async list({ idOrSlug, page, pageSize, limit, signal } = {}) {
       if (!idOrSlug) throw new Error("idOrSlug is required");
 
       const res = await apiRequest(r.list({ idOrSlug }), {
-        query: { page, limit },
+        // Backend uses pageSize; keep limit for backward compat
+        query: { page, pageSize: pageSize ?? limit },
         signal,
       });
 
