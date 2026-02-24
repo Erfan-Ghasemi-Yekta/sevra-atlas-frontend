@@ -4,7 +4,7 @@ import { mountHeader } from "/public/script/components/header.js";
 import { mountSearchBar } from "/public/script/components/landing-searchBar.js";
 import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 import { mountTopStaff } from "/public/script/components/landing-topStaff.js";
-import { mountPopularSalons } from "/public/script/components/landing-popularSalons.js";
+import { mountPopularSalons } from "/public/script/components/landing-topSalons.js";
 
 // --- Header ---
 const headerRoot = document.getElementById("appHeader");
