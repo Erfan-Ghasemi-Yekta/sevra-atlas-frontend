@@ -178,9 +178,12 @@ export async function apiRequest(
 // ---------- Domain APIs (small, clean, modular) ----------
 
 export const salonsApi = {
-  async list(filters = {}) {
+  async list(filters = {}, { signal, authToken, credentials } = {}) {
     // GET /salons
     const res = await apiRequest(`/salons`, {
+      signal,
+      authToken,
+      credentials,
       query: {
         q: filters.q,
         province: filters.province,
@@ -257,9 +260,12 @@ export const servicesApi = {
 // ---------- Artists APIs ----------
 
 export const artistsApi = {
-  async list(filters = {}) {
+  async list(filters = {}, { signal, authToken, credentials } = {}) {
     // GET /artists
     const res = await apiRequest(`/artists`, {
+      signal,
+      authToken,
+      credentials,
       query: {
         q: filters.q,
         city: filters.city,

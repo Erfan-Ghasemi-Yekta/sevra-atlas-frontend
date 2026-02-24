@@ -6,7 +6,9 @@ import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 import { mountTopStaff } from "/public/script/components/landing-topStaff.js";
 import { mountPopularSalons } from "/public/script/components/landing-topSalons.js";
 
-// --- Header ---
+import { loadPopularSalons, loadTopStaff } from "/public/script/api/landingApi.js";
+
+// ---------------- Header ----------------
 const headerRoot = document.getElementById("appHeader");
 
 mountHeader(headerRoot, {
@@ -18,8 +20,98 @@ mountHeader(headerRoot, {
 // Sticky effects (shadow/border on scroll)
 enableStickyHeader(headerRoot, { threshold: 8 });
 
-// --- Search Bar ---
+// ---------------- Landing data orchestration ----------------
+
+const popularSalonsRoot = document.getElementById("popularSalonsMount");
+const topStaffRoot = document.getElementById("topStaffMount");
 const searchRoot = document.getElementById("searchMount");
+
+const popularSalonsProps = {
+  title: "محبوب‌ترین سالن‌های زیبایی",
+  ctaText: "مشاهده همه",
+  ctaHref: "/public/salons.html",
+};
+
+const topStaffProps = {
+  title: "برترین کارکنان ماه",
+  ctaText: "مشاهده همه",
+  ctaHref: "/public/staff.html",
+};
+
+function renderLoading(rootEl, text = "در حال بارگذاری…") {
+  if (!rootEl) return;
+  rootEl.innerHTML = `
+    <div class="w-full py-10 grid place-items-center text-[12px] text-neutral-700">
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-primary-900/60 animate-pulse"></span>
+        <span>${escapeHtml(text)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderError(rootEl, text = "خطا در دریافت اطلاعات") {
+  if (!rootEl) return;
+  rootEl.innerHTML = `
+    <div class="w-full py-10 grid place-items-center text-[12px] text-neutral-700">
+      <div class="text-center">
+        <div class="font-medium text-neutral-900">${escapeHtml(text)}</div>
+        <button
+          type="button"
+          data-retry
+          class="mt-3 inline-flex items-center justify-center rounded-xl bg-neutral-50 px-4 py-2
+                 text-[12px] font-medium text-neutral-900 hover:bg-neutral-50/70 transition"
+        >
+          تلاش دوباره
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+let abortCtrl = null;
+let lastQ = ""; // for avoiding redundant reloads
+
+async function refreshLanding({ q = "" } = {}) {
+  const normalizedQ = String(q || "").trim();
+
+  // abort previous in-flight request
+  if (abortCtrl) abortCtrl.abort();
+  abortCtrl = new AbortController();
+
+  // show loading states
+  renderLoading(popularSalonsRoot, "در حال دریافت سالن‌ها…");
+  renderLoading(topStaffRoot, "در حال دریافت کارکنان…");
+
+  try {
+    const [salons, staffSlides] = await Promise.all([
+      loadPopularSalons({ q: normalizedQ || undefined, limit: 8, signal: abortCtrl.signal }),
+      loadTopStaff({ q: normalizedQ || undefined, limit: 8, perSlide: 2, signal: abortCtrl.signal }),
+    ]);
+
+    if (abortCtrl.signal.aborted) return;
+
+    mountPopularSalons(popularSalonsRoot, { ...popularSalonsProps, items: salons });
+    mountTopStaff(topStaffRoot, { ...topStaffProps, slides: staffSlides });
+  } catch (err) {
+    if (abortCtrl.signal.aborted) return;
+
+    console.error("Landing API error:", err);
+
+    renderError(popularSalonsRoot, "خطا در دریافت لیست سالن‌ها");
+    renderError(topStaffRoot, "خطا در دریافت لیست کارکنان");
+
+    // wire retry buttons (no coupling to components)
+    popularSalonsRoot?.querySelector("[data-retry]")?.addEventListener("click", () => {
+      refreshLanding({ q: lastQ });
+    });
+    topStaffRoot?.querySelector("[data-retry]")?.addEventListener("click", () => {
+      refreshLanding({ q: lastQ });
+    });
+  }
+}
+
+// ---------------- Search ----------------
 
 mountSearchBar(searchRoot, {
   placeholder: "سالن، آرایشگران، خدمات…",
@@ -27,166 +119,45 @@ mountSearchBar(searchRoot, {
   minChars: 0,
 
   onChange: (value) => {
-    // فعلاً فقط لاگ — بعداً اینجا API یا فیلتر کارت‌ها
-    console.log("search change:", value);
+    const q = String(value || "").trim();
+
+    // برای تجربه بهتر: جستجوی زنده فقط وقتی حداقل ۲ کاراکتر داریم.
+    if (q.length >= 2) {
+      lastQ = q;
+      refreshLanding({ q });
+      return;
+    }
+
+    // اگر پاک شد، برگرد به حالت پیش‌فرض
+    if (!q && lastQ) {
+      lastQ = "";
+      refreshLanding({ q: "" });
+    }
   },
 
   onSubmit: (value) => {
-    console.log("search submit:", value);
-    // مثال: رفتن به صفحه نتایج
-    // window.location.href = `/public/salon.html?q=${encodeURIComponent(value)}`;
+    const q = String(value || "").trim();
+    if (!q) return;
+
+    // نتایج کامل‌تر بهتره تو صفحه لیست‌ها نمایش داده بشه
+    window.location.href = `/public/salons.html?q=${encodeURIComponent(q)}`;
   },
 });
 
-// --- Popular Salons (static) ---
-const popularSalonsRoot = document.getElementById("popularSalonsMount");
-
-mountPopularSalons(popularSalonsRoot, {
-  title: "محبوب ترین سالن های زیبایی",
-  ctaText: "مشاهده همه",
-  ctaHref: "/public/salons.html",
-
-  // فعلاً استاتیک — بعداً از API پر می‌کنی
-  items: [
-    {
-      rank: 1,
-      city: "تهران",
-      views: 11,
-      name: "سالن زیبایی تهران",
-      subtitle: "کاشت ناخن | شروع قیمت ها از 150 هزار تومان",
-      imageSrc: "/public/assets/img/img-for-test/img-1.jpg",
-      detailsText: "جزئیات",
-      href: "/public/salon.html",
-    },
-    {
-      rank: 2,
-      city: "تهران",
-      views: 8,
-      name: "سالن لیدی لند",
-      subtitle: "میکاپ | شروع قیمت ها از 200 هزار تومان",
-      imageSrc: "/public/assets/img/img-for-test/img-2.jpg",
-      detailsText: "جزئیات",
-      href: "/public/salon.html",
-    },
-    {
-      rank: 3,
-      city: "تهران",
-      views: 15,
-      name: "سالن آریانا",
-      subtitle: "رنگ و لایت | شروع قیمت ها از 250 هزار تومان",
-      imageSrc: "/public/assets/img/img-for-test/img-3.jpg",
-      detailsText: "جزئیات",
-      href: "/public/salon.html",
-    },
-    {
-      rank: 4,
-      city: "تهران",
-      views: 6,
-      name: "سالن نیلوفر",
-      subtitle: "فیشال | شروع قیمت ها از 180 هزار تومان",
-      imageSrc: "/public/assets/img/img-for-test/img-4.jpg",
-      detailsText: "جزئیات",
-      href: "/public/salon.html",
-    },
-  ],
-});
-
-// --- Top Staff (static) ---
-const topStaffRoot = document.getElementById("topStaffMount");
-
-mountTopStaff(topStaffRoot, {
-  title: "برترین کارکنان ماه بهمن",
-  ctaText: "مشاهده همه",
-  ctaHref: "/public/staff.html",
-
-  // فعلاً استاتیک — بعداً از API پر می‌کنی
-  slides: [
-    [
-      {
-        name: "سارا محسنی",
-        rating: 4.8,
-        reviewsText: "نظرات (۱۳ نظر)",
-        jobsDoneText: "۱۲۰ خدمت انجام‌شده",
-        specialty: "ناخن‌کار، ترمیم و کاشت تخصصی",
-        // اگر عکس تست داری، این مسیر رو عوض کن (در صورت نبود عکس، fallback نمایش داده می‌شه)
-        imageSrc: "/public/assets/img/img-for-test/img-1.jpg",
-        profileHref: "/public/staff.html",
-      },
-      {
-        name: "سارا محسنی",
-        rating: 4.8,
-        reviewsText: "نظرات (۱۳ نظر)",
-        jobsDoneText: "۱۲۰ خدمت انجام‌شده",
-        specialty: "ناخن‌کار، ترمیم و کاشت تخصصی",
-        imageSrc: "/public/assets/img/img-for-test/img-2.jpg",
-        profileHref: "/public/staff.html",
-      },
-    ],
-    [
-      {
-        name: "هانیه کریمی",
-        rating: 4.7,
-        reviewsText: "نظرات (۸ نظر)",
-        jobsDoneText: "۹۵ خدمت انجام‌شده",
-        specialty: "میکاپ و شینیون",
-        imageSrc: "/public/assets/img/img-for-test/img-3.jpg",
-        profileHref: "/public/staff.html",
-      },
-      {
-        name: "مریم احمدی",
-        rating: 4.9,
-        reviewsText: "نظرات (۲۱ نظر)",
-        jobsDoneText: "۱۴۰ خدمت انجام‌شده",
-        specialty: "رنگ و لایت",
-        imageSrc: "/public/assets/img/img-for-test/img-4.jpg",
-        profileHref: "/public/staff.html",
-      },
-    ],
-    [
-      {
-        name: "نرگس شریفی",
-        rating: 4.6,
-        reviewsText: "نظرات (۵ نظر)",
-        jobsDoneText: "۷۲ خدمت انجام‌شده",
-        specialty: "پاکسازی و فیشال",
-        imageSrc: "/public/assets/img/img-for-test/img-5.jpg",
-        profileHref: "/public/staff.html",
-      },
-      {
-        name: "الهام رستمی",
-        rating: 4.8,
-        reviewsText: "نظرات (۱۵ نظر)",
-        jobsDoneText: "۱۱۰ خدمت انجام‌شده",
-        specialty: "ابرو و مژه",
-        imageSrc: "/public/assets/img/img-for-test/img-6.jpg",
-        profileHref: "/public/staff.html",
-      },
-    ],
-    [
-      {
-        name: "آوا حسینی",
-        rating: 4.8,
-        reviewsText: "نظرات (۱۲ نظر)",
-        jobsDoneText: "۱۰۲ خدمت انجام‌شده",
-        specialty: "مانیکور و پدیکور",
-        imageSrc: "/public/assets/img/img-for-test/img-7.jpg",
-        profileHref: "/public/staff.html",
-      },
-      {
-        name: "نوشین رحیمی",
-        rating: 4.7,
-        reviewsText: "نظرات (۹ نظر)",
-        jobsDoneText: "۸۹ خدمت انجام‌شده",
-        specialty: "اصلاح و براشینگ",
-        imageSrc: "/public/assets/img/img-for-test/img-8.jpg",
-        profileHref: "/public/staff.html",
-      },
-    ],
-  ],
-});
-
+// initial load
+refreshLanding({ q: "" });
 
 // (اختیاری) Event-based usage بدون coupling مستقیم
 document.addEventListener("search:submit", (e) => {
+  // اینجا هم می‌تونی routing رو انجام بدی اگر دوست داشتی
   // console.log("event search submit:", e.detail.value);
 });
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
