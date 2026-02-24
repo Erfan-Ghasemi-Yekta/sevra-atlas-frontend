@@ -199,7 +199,7 @@ function cardTemplate(staff = {}) {
 
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-2">
-          <h3 class="text-[20px] font-semibold text-primary-900 truncate">${escapeHtml(name)}</h3>
+          <h3 class="text-[16px] font-semibold text-primary-900 truncate">${escapeHtml(name)}</h3>
 
           <div class="flex flex-col items-end leading-[1.1] shrink-0">
             <div class="flex items-center gap-1 text-[12px] font-semibold tabular-nums">

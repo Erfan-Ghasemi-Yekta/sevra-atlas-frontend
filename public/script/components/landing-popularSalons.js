@@ -172,33 +172,37 @@ function cardTemplate(item = {}) {
         </div>
       </a>
 
-      <div class="px-4 pt-3 pb-4">
-        <div class="flex justify-end">
-          <div class="flex items-center gap-2 text-[11px] text-neutral-700">
-            ${eyeIcon()}
-            <span class="tabular-nums">${escapeHtml(String(views))}</span>
-          </div>
-        </div>
-
-        <h3 class="mt-2 text-center text-[16px] font-semibold text-neutral-900">
+        <div class="px-4 pt-3 pb-4">
+    <div class="flex items-start justify-between gap-3">
+      <!-- right: name + subtitle -->
+      <div class="min-w-0 text-right">
+        <h3 class="text-[16px] font-semibold text-primary-900 truncate">
           ${escapeHtml(name)}
         </h3>
 
         ${subtitle
-          ? `<p class="mt-1 text-center text-[11px] text-neutral-700">${escapeHtml(subtitle)}</p>`
+          ? `<p class="mt-1 text-[11px] text-neutral-700 line-clamp-2">${escapeHtml(subtitle)}</p>`
           : ""}
-
-        <div class="mt-4">
-          <a
-            href="${escapeHtml(href)}"
-            class="block w-full text-center rounded-xl bg-neutral-50 py-3 text-[12px] font-medium text-neutral-900
-                   hover:bg-neutral-50/70 active:scale-[0.99] transition"
-          >
-            ${escapeHtml(detailsText)}
-          </a>
-        </div>
       </div>
-    </article>
+
+      <!-- left: views -->
+      <div class="flex items-center gap-2 text-[11px] text-neutral-700 shrink-0 pt-0.5">
+        ${eyeIcon()}
+        <span class="tabular-nums">${escapeHtml(String(views))}</span>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <a
+        href="${escapeHtml(href)}"
+        class="block w-full text-center rounded-xl bg-neutral-50 py-3 text-[12px] font-medium text-neutral-900
+               hover:bg-neutral-50/70 active:scale-[0.99] transition"
+      >
+        ${escapeHtml(detailsText)}
+      </a>
+    </div>
+  </div>
+</article>
   `;
 }
 
