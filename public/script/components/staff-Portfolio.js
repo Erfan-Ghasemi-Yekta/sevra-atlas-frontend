@@ -1,4 +1,4 @@
-import { apiRequest } from "/public/script/api/apiClient.js";
+import { staffApi } from "/public/script/api/staffApi.js";
 
 // Staff Portfolio component
 // - Fetches gallery from API (no static seed images by default)
@@ -64,9 +64,10 @@ export function createStaffPortfolioClient({ routes = {} } = {}) {
     async list({ idOrSlug, page, pageSize, limit, signal } = {}) {
       if (!idOrSlug) throw new Error("idOrSlug is required");
 
-      const res = await apiRequest(r.list({ idOrSlug }), {
+      const res = await staffApi.listGallery(idOrSlug, {
+        page,
         // Backend uses pageSize; keep limit for backward compat
-        query: { page, pageSize: pageSize ?? limit },
+        pageSize: pageSize ?? limit,
         signal,
       });
 

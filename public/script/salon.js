@@ -3,7 +3,7 @@
 import { mountHeader } from "/public/script/components/header.js";
 import { mountSalonGallery } from "/public/script/components/salon-Gallery.js";
 import { mountSalonDetails } from "/public/script/components/salon-Details.js";
-import { salonsApi } from "/public/script/api/apiClient.js";
+import { salonApi } from "/public/script/api/salonApi.js";
 import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 // ----------------- helpers -----------------
@@ -103,11 +103,11 @@ async function main() {
   try {
     // Fetch in parallel
     const [salon, salonServices, salonGallery] = await Promise.all([
-      salonsApi.getByIdOrSlug(idOrSlug),
+      salonApi.getByIdOrSlug(idOrSlug),
       // Newer API: salon-specific services (has price/duration per salon)
-      salonsApi.listServices(idOrSlug).catch(() => []),
+      salonApi.listServices(idOrSlug).catch(() => []),
       // Newer API: salon gallery (paginated)
-      salonsApi.listGallery(idOrSlug, { page: 1, pageSize: 30 }).catch(() => null),
+      salonApi.listGallery(idOrSlug, { page: 1, pageSize: 30 }).catch(() => null),
     ]);
 
     // -------- Gallery --------

@@ -2,7 +2,7 @@ import { mountHeader } from "/public/script/components/header.js";
 import { mountStaffPortfolio, createStaffPortfolioClient } from "/public/script/components/staff-Portfolio.js";
 import { mountStaffProfile } from "/public/script/components/staff-Profile.js";
 import { mountStaffDetails } from "/public/script/components/staff-Details.js";
-import { artistsApi } from "/public/script/api/apiClient.js";
+import { staffApi } from "/public/script/api/staffApi.js";
 import { enableStickyHeader } from "/public/script/utils/stickyHeader.js";
 
 function escapeHtml(str = "") {
@@ -162,9 +162,9 @@ if (!artistIdOrSlug) {
   (async () => {
     try {
       const [artist, specialtiesRaw] = await Promise.all([
-        artistsApi.getByIdOrSlug(artistIdOrSlug),
+        staffApi.getByIdOrSlug(artistIdOrSlug),
         // atlas-API.yaml: GET /artists/{idOrSlug}/specialties
-        artistsApi.listSpecialties(artistIdOrSlug).catch(() => []),
+        staffApi.listSpecialties(artistIdOrSlug).catch(() => []),
       ]);
 
       const name = artist?.fullName || "";
