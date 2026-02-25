@@ -2,7 +2,11 @@
 // Page-level data loaders + mappers for Landing (Home) page.
 // Keeps UI components "dumb": they only render what we pass.
 
-import { salonsApi, artistsApi, getApiBaseUrl } from "/public/script/api/apiClient.js";
+import { apiRequest, getApiBaseUrl } from "/public/script/api/apiClient.js";
+
+// ---- Endpoints (اگر مسیرهای API شما فرق دارد، فقط این دو تا را عوض کن) ----
+const SALONS_LIST_PATH = "/salons";
+const ARTISTS_LIST_PATH = "/artists";
 
 // --- Helpers ---
 
@@ -68,6 +72,26 @@ function chunk(arr, size) {
   return out;
 }
 
+/**
+ * normalizeListPayload(payload)
+ * ساپورت چند فرم رایج:
+ * - { success:true, data: [...] }
+ * - { success:true, data: { items:[...] } }
+ * - { items:[...] }
+ * - [...]
+ */
+function normalizeListPayload(payload) {
+  const root = payload?.data ?? payload;
+
+  if (Array.isArray(root)) return root;
+  if (Array.isArray(root?.items)) return root.items;
+
+  // بعضی APIها: { data: { rows: [] } } یا ...
+  if (Array.isArray(root?.rows)) return root.rows;
+
+  return [];
+}
+
 // --- Mappers (API -> UI props) ---
 
 export function mapSalonToPopularCard(salon, idx) {
@@ -109,18 +133,19 @@ export function mapArtistToTopStaffCard(artist) {
  * - limit: number of cards for slider
  */
 export async function loadPopularSalons({ q, city, limit = 8, signal } = {}) {
-  const data = await salonsApi.list(
-    {
+  const payload = await apiRequest(SALONS_LIST_PATH, {
+    method: "GET",
+    query: {
       q: q || undefined,
       city: city || undefined,
-      sort: q ? "popular" : "popular",
+      sort: "popular",
       page: 1,
       pageSize: limit,
     },
-    { signal }
-  );
+    signal,
+  });
 
-  const rows = Array.isArray(data) ? data : data?.items || [];
+  const rows = normalizeListPayload(payload);
   return rows.slice(0, limit).map(mapSalonToPopularCard);
 }
 
@@ -129,18 +154,19 @@ export async function loadPopularSalons({ q, city, limit = 8, signal } = {}) {
  * Returns slides format expected by mountTopStaff: [ [card, card], [card, card], ... ]
  */
 export async function loadTopStaff({ q, city, limit = 8, perSlide = 2, signal } = {}) {
-  const data = await artistsApi.list(
-    {
+  const payload = await apiRequest(ARTISTS_LIST_PATH, {
+    method: "GET",
+    query: {
       q: q || undefined,
       city: city || undefined,
       sort: q ? "popular" : "rating",
       page: 1,
       pageSize: limit,
     },
-    { signal }
-  );
+    signal,
+  });
 
-  const rows = Array.isArray(data) ? data : data?.items || [];
+  const rows = normalizeListPayload(payload);
   const cards = rows.slice(0, limit).map(mapArtistToTopStaffCard);
   return chunk(cards, perSlide);
 }
