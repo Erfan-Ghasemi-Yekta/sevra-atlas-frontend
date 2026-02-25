@@ -87,12 +87,12 @@ renderLoading(detailsRoot, { height: 260 });
 async function main() {
   const qs = new URLSearchParams(window.location.search);
 
-  // پشتیبانی از چند نام پارامتر (برای اینکه لینک‌های قبلی خراب نشن)
-  const idOrSlug =
-    qs.get("salonId") ||
-    qs.get("idOrSlug") ||
-    qs.get("slug") ||
-    qs.get("id");
+const idOrSlug =
+  qs.get("salon") ||      // ✅ لینک لندینگ: /public/salon.html?salon=slug
+  qs.get("salonId") ||
+  qs.get("idOrSlug") ||
+  qs.get("slug") ||
+  qs.get("id");
 
   if (!idOrSlug) {
     renderError(detailsRoot, "پارامتر salonId در آدرس صفحه وجود ندارد.");
@@ -242,12 +242,11 @@ async function main() {
       });
     }
 
-    // -------- Details mount --------
-    const commentsPageUrl = `/public/comments.html?entityType=salon&entityId=${encodeURIComponent(
-      salon?.id || idOrSlug
-    )}&back=${encodeURIComponent(
-      `/public/salon.html?salonId=${encodeURIComponent(idOrSlug)}`
-    )}&name=${encodeURIComponent(salon?.name || "")}`;
+const commentsPageUrl = `/public/comments.html?entityType=salon&entityId=${encodeURIComponent(
+  salon?.id || idOrSlug
+)}&back=${encodeURIComponent(
+  `/public/salon.html?salon=${encodeURIComponent(idOrSlug)}`
+)}&name=${encodeURIComponent(salon?.name || "")}`;
 
     mountSalonDetails(detailsRoot, {
       salonId: salon?.id || idOrSlug,
